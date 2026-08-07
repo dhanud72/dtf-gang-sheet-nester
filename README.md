@@ -2,7 +2,9 @@
 
 **▶ Use it: https://dhanud72.github.io/dtf-gang-sheet-nester/**
 
-A single-file web tool for DTF transfer printing. Open the link, or download `index.html` and open it in Chrome. No install, no server, no sign-up, and **nothing is ever uploaded** — the nesting, the PSD and the resizing all happen in your browser, on your machine. Works offline once the page has loaded.
+A single-file web tool for DTF transfer printing. Open the link, or download `index.html` and open it in Chrome. No install, no server, no sign-up.
+
+**Your artwork never leaves your machine.** The trimming, nesting, PSD writing and resizing all happen in your browser — there is no upload and no back end. The hosted page carries an ad strip that loads from Google; your files play no part in it, and blocking it changes nothing about how the tool works. Save `index.html` locally and it runs fully offline.
 
 Free and MIT licensed. Built by **Sangeetha Arts & Sculptures**, a DTF transfer printer in Bengaluru.
 

@@ -289,6 +289,16 @@ button,input,select{font:inherit;color:inherit}
 .rz-name{font-size:11.5px;font-weight:550;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rz-dim{font-family:var(--font-mono);font-size:10px;color:var(--faint);white-space:nowrap;font-variant-numeric:tabular-nums}
 
+/* ---- ad strip ----
+   Sits below the tool, never over it, and collapses to nothing when there is
+   no ad to show — the working area must not jump around. */
+.adbar{
+  flex:none;display:flex;align-items:center;justify-content:center;
+  padding:6px 10px;background:var(--surface);border-top:1px solid var(--line);
+  max-height:110px;overflow:hidden;
+}
+.adbar ins{display:block;width:100%}
+
 /* ---- overlay ---- */
 .overlay{
   position:fixed;inset:0;background:color-mix(in srgb,var(--bg) 78%, transparent);
@@ -481,6 +491,8 @@ button,input,select{font:inherit;color:inherit}
       <ul class="rz-list" id="rzList"></ul>
     </div>
   </section>
+
+  <div class="adbar" id="adbar" hidden></div>
 </div>
 
 <div class="overlay hide" id="overlay">
@@ -2021,4 +2033,54 @@ applyUnitSteps();
 renderSizes(); renderRzList();
 document.querySelectorAll('[data-unit]').forEach(s => s.textContent = unit());
 updateLimits(Math.round(mmToPx(cfg().rollMM)), Math.min(Math.round(mmToPx(cfg().lenMM)), PSD_MAX_PX));
+</script>
+
+<script>
+/* ------------------------------------------------------------------
+   Optional AdSense strip.
+
+   Kept in its own script so it can never take the tool down with it. If
+   ADSENSE_SLOT is blank, the ad is blocked, or Google has no ad to serve,
+   nothing renders, the strip collapses, and the nester behaves exactly as
+   it does offline. Artwork is never sent anywhere either way.
+
+   To switch it on: create a Display ad unit in AdSense, then paste its
+   data-ad-slot number below.
+   ------------------------------------------------------------------ */
+(function(){
+  var ADSENSE_CLIENT = 'ca-pub-5619507936329297';
+  var ADSENSE_SLOT   = '';          // <-- paste the ad unit's slot id here
+
+  if(!ADSENSE_SLOT) return;
+
+  var bar = document.getElementById('adbar');
+  if(!bar) return;
+  var hide = function(){ bar.hidden = true; };
+
+  try{
+    var ins = document.createElement('ins');
+    ins.className = 'adsbygoogle';
+    ins.style.display = 'block';
+    ins.setAttribute('data-ad-client', ADSENSE_CLIENT);
+    ins.setAttribute('data-ad-slot', ADSENSE_SLOT);
+    ins.setAttribute('data-ad-format', 'horizontal');
+    ins.setAttribute('data-full-width-responsive', 'true');
+    bar.appendChild(ins);
+    bar.hidden = false;
+
+    var s = document.createElement('script');
+    s.async = true;
+    s.crossOrigin = 'anonymous';
+    s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' + ADSENSE_CLIENT;
+    s.onerror = hide;               // blocked by an ad blocker, or offline
+    document.head.appendChild(s);
+
+    (window.adsbygoogle = window.adsbygoogle || []).push({});
+
+    /* Google marks the slot "unfilled" when it has nothing to serve */
+    setTimeout(function(){
+      if(ins.getAttribute('data-ad-status') === 'unfilled') hide();
+    }, 4000);
+  }catch(e){ hide(); }
+})();
 </script>
