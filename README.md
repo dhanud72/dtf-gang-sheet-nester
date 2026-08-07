@@ -1,0 +1,57 @@
+# Gang Sheet Nester
+
+A single-file web tool for DTF transfer printing. Open `gang-sheet-nester.html` in Chrome — no install, no server, no upload. Everything runs on the machine, and artwork never leaves it.
+
+Built for **Sangeetha Arts & Sculptures**.
+
+## Two tools
+
+### Gang sheet
+Drop the PNGs for a job, set a size and quantity per design, and it nests them into the roll and exports a **layered PSD** at the right DPI.
+
+- Transparent edges are trimmed automatically, which is the single biggest source of wasted film
+- One layer per sticker, named, so the operator can nudge anything by hand
+- Live fill %, film used, and order value in ₹
+- Splits automatically across numbered sheets when a job runs past the length limit
+- **Job sheet** button exports a CSV of the run: designs, sizes, quantities, prices, resolution, which sheet each piece landed on
+
+### Resizer
+Pick one size, drop in many PNGs, get them all back resized — as a zip or as loose files.
+
+Each output PNG carries a `pHYs` chunk, so it opens at its true physical size in Photoshop instead of at 72 DPI.
+
+## Sizing
+
+A size tier is a **box the artwork fits inside** — nothing is ever stretched or cropped. The longest side reaches the number ordered and the other stays proportional, so a 3:1 design at 4 × 4 comes out 4 × 1.33 in. Non-square paper sizes (A5/A4/A3) rotate to match the artwork, so a landscape design ordered as A4 gets the full 11.7 in.
+
+## Filenames do the typing
+
+The size can't be inferred from an image — the same PNG sells at any tier — so it's read from the filename when it's there:
+
+| Filename | Result |
+|---|---|
+| `luffy_4x4.png` | 4 × 4 in |
+| `panda A4.png` | A4 |
+| `band_a5.png` | A5 |
+| `sunset a5 qty12.png` | A5, quantity 12 |
+
+Quantity needs an explicit `qty` — a bare `x` is ambiguous with the size, and guessing wrong would silently multiply a customer's order.
+
+## Settings worth knowing
+
+- **Mirror the sheet for transfer** — DTF prints face-down. Leave it off if your RIP already mirrors; turn it on if it doesn't.
+- **Spread copies of the same design apart** — guards against a dropped nozzle ruining every copy in one band. Costs roughly 16% more film, so it is off by default.
+- **Pad canvas to the exact size** (Resizer) — off gives tight artwork, on gives a true 4 × 4 canvas with transparent margins.
+- **Save loose files, not a zip** (Resizer) — Windows shows no thumbnails for files inside a zip.
+
+Roll width, DPI, gap and margin are remembered between sessions.
+
+## Limits
+
+A PSD cannot exceed **30,000 px**, which is 100 inches at 300 DPI. Longer jobs split into numbered sheets automatically. Lower the DPI for longer single sheets.
+
+Chrome (or Edge). Firefox and Safari are untested.
+
+## Status
+
+Output is verified structurally — the PSD is parsed back byte by byte, packing is proved free of overlaps across randomised jobs, and mirroring is proved pixel-exact. **It has not yet been opened in real Photoshop or a production RIP.** Check the first sheet of a real job before trusting it on paid work.
