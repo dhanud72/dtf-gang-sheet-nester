@@ -1,2086 +1,485 @@
-<title>Gang Sheet Nester</title>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DTF Gang Sheets: how to prepare artwork and stop wasting film</title>
+<meta name="description" content="A practical guide to preparing artwork for DTF gang sheet printing — transparency, resolution, sizing, gaps and mirroring — plus a free tool that nests your PNGs into a roll and exports a layered PSD.">
+<link rel="canonical" href="https://dhanud72.github.io/dtf-gang-sheet-nester/">
 <style>
 :root{
-  --bg:#eaeef0; --surface:#ffffff; --surface-2:#f4f7f8; --surface-3:#e7ecee;
-  --line:#cfd8dd; --line-strong:#b3c0c7;
-  --text:#0f171c; --dim:#5a6b76; --faint:#8496a1;
-  --accent:#d94f16; --accent-hi:#f4642a; --accent-soft:#fceee7;
-  --cyan:#0a7382; --good:#1c8449; --warn:#9c6100; --bad:#b83227;
-  --shadow:0 1px 2px rgba(15,35,45,.08), 0 8px 24px -12px rgba(15,35,45,.22);
-  --film-a:#dfe6e9; --film-b:#eef2f4;
-  --font-ui:system-ui,"Segoe UI",Roboto,sans-serif;
-  --font-mono:ui-monospace,"Cascadia Mono","Consolas","DejaVu Sans Mono",monospace;
-  --r:7px;
+  --bg:#f3f5f6; --surface:#fff; --surface-2:#eef2f3; --line:#d6dee2; --line-2:#bcc8ce;
+  --text:#101a1f; --dim:#4d616c; --faint:#7b8f9a;
+  --accent:#c9481a; --cyan:#0a6f7d;
+  --good:#17703f; --warn:#8a5600; --bad:#a82c22;
+  --ui:system-ui,"Segoe UI",Roboto,sans-serif;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,"DejaVu Sans Mono",monospace;
 }
 @media (prefers-color-scheme:dark){
   :root{
-    --bg:#0b1014; --surface:#131b21; --surface-2:#18222a; --surface-3:#1f2b34;
-    --line:#25333d; --line-strong:#354855;
-    --text:#e4ecf1; --dim:#8ba0ad; --faint:#667986;
-    --accent:#ff7a3d; --accent-hi:#ff9761; --accent-soft:#2b1a11;
-    --cyan:#3cc3d6; --good:#3ecf7a; --warn:#e2a83c; --bad:#ff6f60;
-    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.7);
-    --film-a:#1b252c; --film-b:#222e37;
+    --bg:#0c1114; --surface:#141c21; --surface-2:#1b262c; --line:#26343c; --line-2:#3a4d58;
+    --text:#e6edf1; --dim:#9bb0bb; --faint:#6d838f;
+    --accent:#ff7a45; --cyan:#3fc2d4; --good:#42d07d; --warn:#e0a63a; --bad:#ff6f60;
   }
 }
-:root[data-theme="light"]{
-  --bg:#eaeef0; --surface:#ffffff; --surface-2:#f4f7f8; --surface-3:#e7ecee;
-  --line:#cfd8dd; --line-strong:#b3c0c7;
-  --text:#0f171c; --dim:#5a6b76; --faint:#8496a1;
-  --accent:#d94f16; --accent-hi:#f4642a; --accent-soft:#fceee7;
-  --cyan:#0a7382; --good:#1c8449; --warn:#9c6100; --bad:#b83227;
-  --shadow:0 1px 2px rgba(15,35,45,.08), 0 8px 24px -12px rgba(15,35,45,.22);
-  --film-a:#dfe6e9; --film-b:#eef2f4;
-}
 :root[data-theme="dark"]{
-  --bg:#0b1014; --surface:#131b21; --surface-2:#18222a; --surface-3:#1f2b34;
-  --line:#25333d; --line-strong:#354855;
-  --text:#e4ecf1; --dim:#8ba0ad; --faint:#667986;
-  --accent:#ff7a3d; --accent-hi:#ff9761; --accent-soft:#2b1a11;
-  --cyan:#3cc3d6; --good:#3ecf7a; --warn:#e2a83c; --bad:#ff6f60;
-  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.7);
-  --film-a:#1b252c; --film-b:#222e37;
+  --bg:#0c1114; --surface:#141c21; --surface-2:#1b262c; --line:#26343c; --line-2:#3a4d58;
+  --text:#e6edf1; --dim:#9bb0bb; --faint:#6d838f;
+  --accent:#ff7a45; --cyan:#3fc2d4; --good:#42d07d; --warn:#e0a63a; --bad:#ff6f60;
 }
-
 *{box-sizing:border-box}
-/* author display rules otherwise beat the UA stylesheet's [hidden] */
-[hidden]{display:none!important}
-body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-ui);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
-h1,h2,h3,p{margin:0}
-button,input,select{font:inherit;color:inherit}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--ui);font-size:16.5px;line-height:1.68;-webkit-font-smoothing:antialiased}
+h1,h2,h3,p,ul,ol,figure,table{margin:0}
+a{color:var(--accent);text-underline-offset:3px}
+a:hover{text-decoration-thickness:2px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px}
 
-.app{display:flex;flex-direction:column;height:100vh;min-height:0}
+.wrap{max-width:760px;margin:0 auto;padding:0 22px}
 
-/* ---- header ---- */
-.bar{
-  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
-  padding:9px 16px;background:var(--surface);border-bottom:1px solid var(--line);
-  position:relative;z-index:5;
-}
-.brand{display:flex;align-items:center;gap:11px;min-width:0}
-.mark{
-  width:26px;height:26px;border-radius:4px;flex:none;position:relative;
-  background:
-    repeating-linear-gradient(90deg,var(--accent) 0 3px,transparent 3px 7px),
-    linear-gradient(180deg,var(--cyan),color-mix(in srgb,var(--cyan) 55%, #000));
-  box-shadow:inset 0 0 0 1px rgba(0,0,0,.25);
-}
-.brand h1{font-size:15px;font-weight:650;letter-spacing:-.01em;white-space:nowrap}
-.sub{font-family:var(--font-mono);font-size:10.5px;color:var(--faint);letter-spacing:.03em;white-space:nowrap}
+.top{border-bottom:1px solid var(--line);background:var(--surface);position:sticky;top:0;z-index:9}
+.top .wrap{display:flex;align-items:center;gap:14px;padding-top:12px;padding-bottom:12px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit;min-width:0}
+.mark{width:26px;height:26px;border-radius:5px;flex:none;
+  background:repeating-linear-gradient(90deg,var(--accent) 0 3px,transparent 3px 7px),
+             linear-gradient(180deg,var(--cyan),#04343c);
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.25)}
+.logo b{font-size:15px;font-weight:650;letter-spacing:-.01em;white-space:nowrap}
+.top nav{margin-left:auto;display:flex;gap:8px;align-items:center}
+.btn{display:inline-block;background:var(--accent);color:#fff;text-decoration:none;
+  padding:9px 16px;border-radius:8px;font-weight:600;font-size:14.5px;white-space:nowrap}
+.btn:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent;color:var(--dim);border:1px solid var(--line-2);font-weight:550}
+.btn.ghost:hover{color:var(--text);filter:none;border-color:var(--faint)}
 
-.modes{display:flex;gap:2px;background:var(--surface-3);border:1px solid var(--line);border-radius:8px;padding:2px}
-.mode{
-  border:0;background:transparent;border-radius:6px;padding:5px 13px;cursor:pointer;
-  font-size:12.5px;font-weight:550;color:var(--dim);white-space:nowrap;transition:background .13s,color .13s;
-}
-.mode:hover{color:var(--text)}
-.mode[aria-selected="true"]{background:var(--surface);color:var(--text);box-shadow:0 1px 2px rgba(0,0,0,.14)}
+header.hero{padding:54px 0 8px}
+.eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan);margin-bottom:14px}
+h1{font-size:clamp(30px,5.4vw,44px);line-height:1.13;letter-spacing:-.022em;font-weight:700;text-wrap:balance}
+.standfirst{font-size:19px;color:var(--dim);margin-top:16px;text-wrap:pretty}
+.cta-row{display:flex;gap:11px;flex-wrap:wrap;align-items:center;margin-top:26px}
+.cta-note{font-size:13.5px;color:var(--faint)}
 
-.stats{display:flex;gap:6px;margin-left:auto;flex-wrap:wrap}
-.tile{
-  background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r);
-  padding:4px 9px;min-width:66px;
-}
-.tile .k{font-family:var(--font-mono);font-size:9px;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);white-space:nowrap}
-.tile .v{font-family:var(--font-mono);font-size:15px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.25}
-.tile[data-tone="good"] .v{color:var(--good)}
-.tile[data-tone="warn"] .v{color:var(--warn)}
-.tile[data-tone="bad"] .v{color:var(--bad)}
+main{padding-bottom:60px}
+section{padding-top:44px}
+h2{font-size:25px;line-height:1.25;letter-spacing:-.015em;margin-bottom:6px;text-wrap:balance}
+h3{font-size:17.5px;margin-top:26px;margin-bottom:4px;letter-spacing:-.005em}
+p{margin-top:13px}
+ul,ol{margin-top:13px;padding-left:22px}
+li{margin-top:7px}
+li::marker{color:var(--faint)}
+strong{font-weight:650}
+code{font-family:var(--mono);font-size:.88em;background:var(--surface-2);padding:1px 5px;border-radius:4px;border:1px solid var(--line)}
 
-.btn{
-  border:1px solid var(--line-strong);background:var(--surface-2);border-radius:var(--r);
-  padding:8px 14px;font-size:13px;font-weight:550;cursor:pointer;white-space:nowrap;
-  transition:background .13s,border-color .13s,opacity .13s;
-}
-.btn:hover:not(:disabled){background:var(--surface-3);border-color:var(--faint)}
-.btn:disabled{opacity:.42;cursor:not-allowed}
-.btn-primary{background:var(--accent);border-color:var(--accent);color:#fff}
-.btn-primary:hover:not(:disabled){background:var(--accent-hi);border-color:var(--accent-hi)}
-.btn-ghost{background:transparent;border-color:transparent;color:var(--dim);padding:6px 9px}
-.btn-ghost:hover:not(:disabled){background:var(--surface-3);color:var(--text)}
-.btn-sm{padding:5px 10px;font-size:12px}
-.actions{display:flex;gap:7px;align-items:center}
+.rule{height:1px;background:var(--line);margin-top:44px}
 
-/* ---- layout ---- */
-.body{flex:1;display:grid;grid-template-columns:384px 1fr;min-height:0}
-.rail{
-  border-right:1px solid var(--line);background:var(--surface);
-  overflow-y:auto;display:flex;flex-direction:column;
+.callout{
+  margin-top:22px;background:var(--surface);border:1px solid var(--line);
+  border-left:3px solid var(--accent);border-radius:8px;padding:15px 18px;
 }
-.panel{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:11px}
-.panel:last-child{border-bottom:0;flex:1;min-height:0}
-.phead{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
-.phead h2{font-family:var(--font-mono);font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
-.phead .note{font-family:var(--font-mono);font-size:10.5px;color:var(--faint);font-variant-numeric:tabular-nums}
+.callout p:first-child{margin-top:0}
+.callout.warn{border-left-color:var(--warn)}
+.callout .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
 
-.fields{display:grid;grid-template-columns:1fr 1fr;gap:9px}
-.field{display:flex;flex-direction:column;gap:3px;min-width:0}
-.field.wide{grid-column:1/-1}
-.field label{font-size:11px;color:var(--dim)}
+.tbl{margin-top:20px;overflow-x:auto;border:1px solid var(--line);border-radius:9px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line)}
+tr:last-child td{border-bottom:0}
+th{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);font-weight:600;white-space:nowrap}
+td.num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.ok{color:var(--good);font-weight:600}
+.no{color:var(--bad);font-weight:600}
+.mid{color:var(--warn);font-weight:600}
 
-/* one input shell, used everywhere — never combined with .field on the
-   same element, or the column/row flex directions fight */
-.in{display:flex;align-items:center;border:1px solid var(--line);border-radius:var(--r);background:var(--surface-2);overflow:hidden;min-width:0}
-.in:focus-within{border-color:var(--accent)}
-.in input,.in select{
-  width:100%;border:0;background:transparent;padding:6px 8px;
-  font-family:var(--font-mono);font-size:13px;font-variant-numeric:tabular-nums;min-width:0;
+.steps{counter-reset:s;list-style:none;padding-left:0;margin-top:18px}
+.steps li{counter-increment:s;position:relative;padding-left:40px;margin-top:15px}
+.steps li::before{
+  content:counter(s);position:absolute;left:0;top:1px;width:26px;height:26px;border-radius:50%;
+  background:var(--surface-2);border:1px solid var(--line-2);color:var(--dim);
+  font-family:var(--mono);font-size:12px;display:grid;place-items:center;font-weight:600;
 }
-.in input:focus,.in select:focus{outline:none}
-.in select{cursor:pointer;padding-right:4px}
-.unit{font-family:var(--font-mono);font-size:10.5px;color:var(--faint);padding:0 7px 0 2px;flex:none}
-.hint{font-size:11px;color:var(--faint);line-height:1.45}
-.hint.warn{color:var(--warn)}
+.steps li::marker{content:none}
 
-/* ---- drop zone ---- */
-.drop{
-  border:1.5px dashed var(--line-strong);border-radius:var(--r);background:var(--surface-2);
-  padding:16px 12px;text-align:center;cursor:pointer;transition:border-color .13s,background .13s;
-}
-.drop:hover,.drop.over{border-color:var(--accent);background:var(--accent-soft)}
-.drop strong{display:block;font-size:13px;font-weight:600}
-.drop span{font-size:11.5px;color:var(--faint)}
+.faq{margin-top:10px}
+details{border-bottom:1px solid var(--line);padding:14px 0}
+summary{cursor:pointer;font-weight:600;font-size:16.5px;list-style:none;display:flex;gap:10px;align-items:flex-start}
+summary::-webkit-details-marker{display:none}
+summary::before{content:'+';font-family:var(--mono);color:var(--accent);font-weight:700;flex:none;line-height:1.5}
+details[open] summary::before{content:'–'}
+details p{margin-top:10px;padding-left:20px;color:var(--dim)}
 
-.bulk{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
-.bulk .in{flex:1 1 96px;min-width:0}
-.check{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--dim);cursor:pointer;user-select:none}
-.check input{width:14px;height:14px;accent-color:var(--accent);cursor:pointer;flex:none}
+.adslot{margin-top:40px;display:flex;justify-content:center;min-height:0}
+.adslot ins{display:block;width:100%}
 
-/* ---- item list ---- */
-.items{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px;overflow-y:auto;flex:1;min-height:0}
-.item{
-  display:grid;grid-template-columns:42px 1fr auto;gap:9px;align-items:start;
-  background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r);padding:7px 8px;
+.endcta{
+  margin-top:46px;background:var(--surface);border:1px solid var(--line);border-radius:12px;
+  padding:26px 24px;text-align:center;
 }
-.item.sel{border-color:var(--accent);background:var(--accent-soft)}
-.item.bad{border-color:var(--bad)}
-.thumb{
-  width:42px;height:42px;border-radius:4px;border:1px solid var(--line);flex:none;
-  background-color:var(--surface);
-  background-image:linear-gradient(45deg,var(--film-a) 25%,transparent 25%,transparent 75%,var(--film-a) 75%),
-                   linear-gradient(45deg,var(--film-a) 25%,var(--film-b) 25%,var(--film-b) 75%,var(--film-a) 75%);
-  background-size:10px 10px;background-position:0 0,5px 5px;
-  display:flex;align-items:center;justify-content:center;overflow:hidden;
-}
-.thumb img{max-width:100%;max-height:100%;display:block}
-.imeta{min-width:0;display:flex;flex-direction:column;gap:4px}
-.iname{font-size:12px;font-weight:550;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.irow{display:flex;align-items:center;gap:5px}
-.irow .in{border:1px solid var(--line);border-radius:5px;background:var(--surface);display:flex;align-items:center;overflow:hidden}
-.irow .in:focus-within{border-color:var(--accent)}
-.irow input{width:100%;border:0;background:transparent;padding:3px 5px;font-family:var(--font-mono);font-size:11.5px;font-variant-numeric:tabular-nums;min-width:0}
-.irow input:focus{outline:none}
-.irow select{border:0;background:transparent;padding:3px 2px 3px 5px;font-family:var(--font-mono);font-size:11.5px;width:100%;min-width:0;cursor:pointer}
-.irow select:focus{outline:none}
-.p-in{flex:1 1 auto;min-width:0}
-.w-in{width:72px;flex:none}
-.q-in{width:52px;flex:none}
-.dims{font-family:var(--font-mono);font-size:10.5px;color:var(--faint);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.price{color:var(--accent);font-weight:600}
-.flag{
-  display:inline-block;border-radius:4px;padding:0 5px;font-size:9.5px;font-weight:600;
-  letter-spacing:.02em;vertical-align:1px;white-space:nowrap;cursor:help;
-}
-.flag.warn{background:color-mix(in srgb,var(--warn) 20%,transparent);color:var(--warn)}
-.flag.bad{background:color-mix(in srgb,var(--bad) 20%,transparent);color:var(--bad)}
-.icontrols{display:flex;flex-direction:column;gap:4px;align-items:center}
-.tog{
-  border:1px solid var(--line);background:var(--surface);border-radius:5px;width:26px;height:22px;
-  display:grid;place-items:center;cursor:pointer;color:var(--faint);padding:0;
-}
-.tog[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
-.tog svg{width:13px;height:13px;display:block}
-.x{border:0;background:transparent;color:var(--faint);cursor:pointer;width:26px;height:20px;border-radius:5px;padding:0;line-height:1}
-.x:hover{background:var(--bad);color:#fff}
+.endcta h2{font-size:21px}
+.endcta p{color:var(--dim);max-width:52ch;margin-left:auto;margin-right:auto}
 
-/* ---- stage ---- */
-.stage{display:flex;flex-direction:column;min-width:0;min-height:0;background:var(--bg)}
-.stage-bar{
-  display:flex;align-items:center;gap:12px;padding:8px 14px;
-  border-bottom:1px solid var(--line);background:var(--surface);min-height:45px;flex-wrap:wrap;
-}
-.tabs{display:flex;gap:5px;overflow-x:auto;flex:1;min-width:0;padding-bottom:1px}
-.tab{
-  border:1px solid var(--line);background:var(--surface-2);border-radius:5px;
-  padding:4px 10px;cursor:pointer;white-space:nowrap;
-  font-family:var(--font-mono);font-size:11px;font-variant-numeric:tabular-nums;color:var(--dim);
-}
-.tab[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
-.zoom{display:flex;align-items:center;gap:4px;flex:none}
-.zoom .val{font-family:var(--font-mono);font-size:11px;color:var(--dim);min-width:44px;text-align:center;font-variant-numeric:tabular-nums}
-
-.canvas-wrap{flex:1;overflow:auto;padding:22px;min-height:0;display:flex;justify-content:center;align-items:flex-start}
-#preview{
-  display:block;box-shadow:var(--shadow);border:1px solid var(--line-strong);
-  background-color:var(--surface);
-  background-image:linear-gradient(45deg,var(--film-a) 25%,transparent 25%,transparent 75%,var(--film-a) 75%),
-                   linear-gradient(45deg,var(--film-a) 25%,var(--film-b) 25%,var(--film-b) 75%,var(--film-a) 75%);
-  background-size:16px 16px;background-position:0 0,8px 8px;
-}
-/* width across the top, length down the side — the two numbers an operator
-   needs before committing film */
-.sheet-box{display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0}
-.sheet-row{display:flex;align-items:stretch;gap:5px}
-.sheet-dim{
-  font-family:var(--font-mono);font-size:10.5px;font-variant-numeric:tabular-nums;
-  color:var(--cyan);letter-spacing:.04em;display:flex;align-items:center;justify-content:center;
-}
-.sheet-dim.across{width:100%;gap:7px}
-.sheet-dim.across::before,.sheet-dim.across::after{content:'';flex:1;height:1px;background:currentColor;opacity:.45}
-.sheet-dim.down{writing-mode:vertical-rl;flex-direction:column;gap:7px}
-.sheet-dim.down::before,.sheet-dim.down::after{content:'';flex:1;width:1px;background:currentColor;opacity:.45}
-.sheet-caption{
-  font-family:var(--font-mono);font-size:10.5px;color:var(--faint);
-  font-variant-numeric:tabular-nums;text-align:center;max-width:100%;
-}
-.empty{
-  max-width:330px;margin:14vh auto 0;text-align:center;color:var(--faint);
-  display:flex;flex-direction:column;gap:8px;
-}
-.empty h3{font-size:15px;color:var(--dim);font-weight:600}
-.empty p{font-size:12.5px;line-height:1.6}
-.empty.hide{display:none}
-
-/* ---- resizer ---- */
-.resizer{flex:1;overflow-y:auto;min-height:0;background:var(--bg)}
-.rz-inner{max-width:760px;margin:0 auto;padding:26px 22px 44px;display:flex;flex-direction:column;gap:16px}
-.rz-head h2{font-size:19px;font-weight:650;letter-spacing:-.01em}
-.rz-head p{font-size:13px;color:var(--dim);max-width:62ch;margin-top:5px;line-height:1.6}
-
-.sizes{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:8px}
-.size{
-  border:1px solid var(--line);background:var(--surface);border-radius:9px;padding:11px 10px;
-  cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:2px;
-  transition:border-color .13s,background .13s;
-}
-.size:hover{border-color:var(--faint)}
-.size[aria-checked="true"]{border-color:var(--accent);background:var(--accent-soft);box-shadow:inset 0 0 0 1px var(--accent)}
-.size .sz{font-family:var(--font-mono);font-size:13px;font-weight:600}
-.size .pr{font-family:var(--font-mono);font-size:11px;color:var(--faint)}
-.size[aria-checked="true"] .pr{color:var(--accent)}
-
-.rz-custom{display:flex;align-items:flex-end;gap:10px}
-.rz-custom .field{width:120px}
-.rz-x{font-family:var(--font-mono);color:var(--faint);padding-bottom:7px}
-
-.rz-opts{display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap}
-.rz-opts .field{width:126px}
-.rz-opts .check{padding-bottom:7px}
-.rz-note{font-family:var(--font-mono);font-size:11px;color:var(--faint);padding-bottom:7px;margin-left:auto}
-
-.rz-bar{display:flex;align-items:center;gap:9px}
-.rz-count{font-family:var(--font-mono);font-size:11.5px;color:var(--dim);margin-right:auto}
-
-.rz-list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:8px}
-.rz-item{
-  display:flex;align-items:center;gap:9px;background:var(--surface);border:1px solid var(--line);
-  border-radius:var(--r);padding:7px 8px;min-width:0;
-}
-.rz-thumb{
-  width:38px;height:38px;flex:none;border-radius:4px;border:1px solid var(--line);overflow:hidden;
-  display:flex;align-items:center;justify-content:center;background-color:var(--surface-2);
-  background-image:linear-gradient(45deg,var(--film-a) 25%,transparent 25%,transparent 75%,var(--film-a) 75%),
-                   linear-gradient(45deg,var(--film-a) 25%,var(--film-b) 25%,var(--film-b) 75%,var(--film-a) 75%);
-  background-size:10px 10px;background-position:0 0,5px 5px;
-}
-.rz-thumb img{max-width:100%;max-height:100%;display:block}
-.rz-meta{min-width:0;display:flex;flex-direction:column;gap:2px}
-.rz-name{font-size:11.5px;font-weight:550;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.rz-dim{font-family:var(--font-mono);font-size:10px;color:var(--faint);white-space:nowrap;font-variant-numeric:tabular-nums}
-
-/* ---- ad strip ----
-   Sits below the tool, never over it, and collapses to nothing when there is
-   no ad to show — the working area must not jump around. */
-.adbar{
-  flex:none;display:flex;align-items:center;justify-content:center;
-  padding:6px 10px;background:var(--surface);border-top:1px solid var(--line);
-  max-height:110px;overflow:hidden;
-}
-.adbar ins{display:block;width:100%}
-
-/* ---- overlay ---- */
-.overlay{
-  position:fixed;inset:0;background:color-mix(in srgb,var(--bg) 78%, transparent);
-  backdrop-filter:blur(3px);display:grid;place-items:center;z-index:50;
-}
-.overlay.hide{display:none}
-.card{
-  background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);
-  padding:20px 22px;width:min(360px,88vw);display:flex;flex-direction:column;gap:11px;
-}
-.card h3{font-size:14px;font-weight:600}
-.card .step{font-family:var(--font-mono);font-size:11.5px;color:var(--dim);font-variant-numeric:tabular-nums}
-.track{height:5px;background:var(--surface-3);border-radius:3px;overflow:hidden}
-.track i{display:block;height:100%;width:0;background:var(--accent);transition:width .18s}
-
-.toast{
-  position:fixed;left:50%;bottom:26px;transform:translate(-50%,14px);
-  background:var(--surface);border:1px solid var(--line-strong);border-left:3px solid var(--accent);
-  border-radius:var(--r);box-shadow:var(--shadow);padding:9px 15px;font-size:12.5px;
-  opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:60;max-width:min(460px,90vw);
-}
-.toast.show{opacity:1;transform:translate(-50%,0)}
-.toast.bad{border-left-color:var(--bad)}
-
-@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
-/* the tagline is the first thing to go when the header runs out of room */
-@media (max-width:1200px){ .sub{display:none} .brand h1{font-size:14px} }
-@media (max-width:1040px){ .brand h1{display:none} }
-@media (max-width:900px){
-  .body{grid-template-columns:1fr;grid-template-rows:auto 1fr}
-  .rail{border-right:0;border-bottom:1px solid var(--line);max-height:52vh}
-  .stats{margin-left:0;width:100%}
-}
+footer{border-top:1px solid var(--line);background:var(--surface);padding:30px 0 44px;margin-top:10px}
+footer .wrap{display:flex;flex-wrap:wrap;gap:20px;justify-content:space-between}
+.fcol h4{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin:0 0 8px;font-weight:600}
+.fcol p,.fcol a{font-size:14.5px;color:var(--dim);margin:3px 0;display:block;text-decoration:none}
+.fcol a:hover{color:var(--accent)}
+.fine{font-size:13px;color:var(--faint);margin-top:24px;width:100%}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
+</head>
+<body>
 
-<div class="app">
-  <header class="bar">
-    <div class="brand">
-      <span class="mark" aria-hidden="true"></span>
-      <div>
-        <h1>Gang Sheet Nester</h1>
-        <p class="sub">DTF FILM · AUTO-NEST · LAYERED PSD</p>
-      </div>
-    </div>
-
-    <div class="modes" role="tablist" aria-label="Tool">
-      <button class="mode" id="modeNest" role="tab" aria-selected="true">Gang sheet</button>
-      <button class="mode" id="modeResize" role="tab" aria-selected="false">Resizer</button>
-    </div>
-
-    <div class="stats" id="stats">
-      <div class="tile"><div class="k">Fill</div><div class="v" id="stFill">—</div></div>
-      <div class="tile"><div class="k">Sheets</div><div class="v" id="stSheets">0</div></div>
-      <div class="tile"><div class="k">Film used</div><div class="v" id="stFilm">—</div></div>
-      <div class="tile"><div class="k">Pieces</div><div class="v" id="stPieces">0</div></div>
-      <div class="tile"><div class="k">Value</div><div class="v" id="stValue">—</div></div>
-    </div>
-
-    <div class="actions">
-      <button class="btn" id="exportCsv" disabled>Job sheet</button>
-      <button class="btn btn-primary" id="exportPsd" disabled>Export PSD</button>
-    </div>
-  </header>
-
-  <main class="body" id="viewNest">
-    <aside class="rail">
-      <section class="panel">
-        <div class="phead"><h2>Roll &amp; sheet</h2><span class="note" id="pxNote"></span></div>
-        <div class="fields">
-          <div class="field">
-            <label for="fUnits">Working units</label>
-            <div class="in"><select id="fUnits"><option value="in" selected>Inches</option><option value="mm">Millimetres</option></select></div>
-          </div>
-          <div class="field">
-            <label for="fDpi">Print resolution</label>
-            <div class="in"><input id="fDpi" type="number" min="72" max="1200" step="1" value="300"><span class="unit">DPI</span></div>
-          </div>
-          <div class="field">
-            <label for="fRoll">Roll width</label>
-            <div class="in"><input id="fRoll" type="number" min="1" step="0.5" value="22"><span class="unit" data-unit>in</span></div>
-          </div>
-          <div class="field">
-            <label for="fLen">Max sheet length</label>
-            <div class="in"><input id="fLen" type="number" min="1" step="10" value="1000"><span class="unit" data-unit>in</span></div>
-          </div>
-          <div class="field">
-            <label for="fGap">Gap between pieces</label>
-            <div class="in"><input id="fGap" type="number" min="0" step="0.025" value="0.125"><span class="unit" data-unit>in</span></div>
-          </div>
-          <div class="field">
-            <label for="fEdge">Edge margin</label>
-            <div class="in"><input id="fEdge" type="number" min="0" step="0.05" value="0.25"><span class="unit" data-unit>in</span></div>
-          </div>
-        </div>
-        <label class="check"><input type="checkbox" id="fMirror"> mirror the sheet for transfer</label>
-        <label class="check"><input type="checkbox" id="fSpread"> spread copies of the same design apart</label>
-        <p class="hint" id="limitHint"></p>
-      </section>
-
-      <section class="panel">
-        <div class="phead"><h2>Artwork</h2><span class="note" id="itemNote">no files</span></div>
-
-        <div class="drop" id="drop" tabindex="0" role="button" aria-label="Add PNG artwork">
-          <strong>Drop PNGs here</strong>
-          <span>or click to browse — transparent edges are trimmed automatically</span>
-        </div>
-        <input type="file" id="file" accept="image/png,image/webp,image/jpeg" multiple hidden>
-
-        <div class="bulk">
-          <div class="in"><select id="bulkPreset" aria-label="size for every design">
-            <option value="">Set every design to…</option>
-            <option value="2x2">2 × 2 in — ₹20</option>
-            <option value="4x4">4 × 4 in — ₹39</option>
-            <option value="6x6">6 × 6 in — ₹69</option>
-            <option value="a5">A5 5.8 × 8.3 — ₹99</option>
-            <option value="a4">A4 8.3 × 11.7 — ₹149</option>
-            <option value="a3">A3 11.7 × 16.5 — ₹249</option>
-            <option value="custom">Custom width…</option>
-          </select></div>
-          <div class="in" id="bulkWWrap" hidden><input id="bulkW" type="number" min="0.1" step="0.25" placeholder="width" aria-label="custom width for every design"><span class="unit" data-unit>in</span></div>
-          <button class="btn btn-sm" id="bulkApply">Apply</button>
-          <label class="check"><input type="checkbox" id="bulkRotate" checked> allow rotation</label>
-        </div>
-
-        <ul class="items" id="items"></ul>
-      </section>
-    </aside>
-
-    <section class="stage">
-      <div class="stage-bar">
-        <div class="tabs" id="tabs" role="tablist"></div>
-        <div class="zoom">
-          <button class="btn btn-ghost btn-sm" id="zoomOut" aria-label="Zoom out">−</button>
-          <span class="val" id="zoomVal">fit</span>
-          <button class="btn btn-ghost btn-sm" id="zoomIn" aria-label="Zoom in">+</button>
-          <button class="btn btn-ghost btn-sm" id="zoomFit">Fit</button>
-        </div>
-      </div>
-      <div class="canvas-wrap" id="canvasWrap">
-        <div class="sheet-box" id="sheetBox" hidden>
-          <div class="sheet-dim across" id="dimAcross"></div>
-          <div class="sheet-row">
-            <div class="sheet-dim down" id="dimDown"></div>
-            <canvas id="preview"></canvas>
-          </div>
-          <div class="sheet-caption" id="sheetCaption"></div>
-        </div>
-        <div class="empty" id="empty">
-          <h3>No artwork loaded</h3>
-          <p>Add the PNGs for this job, give each one a printed width, and the sheet builds itself. Nothing is uploaded — the nesting and the PSD are made here on this machine.</p>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <section class="resizer" id="viewResize" hidden>
-    <div class="rz-inner">
-      <div class="rz-head">
-        <h2>Resize a batch to one size</h2>
-        <p>Pick the size the customer ordered, drop in every PNG for it, and download them all back as one zip. Transparent edges are trimmed first, so a 4 × 4 file really measures 4 inches across the artwork.</p>
-      </div>
-
-      <div class="sizes" id="rzSizes" role="radiogroup" aria-label="Output size"></div>
-
-      <div class="rz-custom" id="rzCustom" hidden>
-        <div class="field"><label for="rzCw">Width</label><div class="in"><input id="rzCw" type="number" min="0.1" step="0.25" value="4"><span class="unit">in</span></div></div>
-        <span class="rz-x">×</span>
-        <div class="field"><label for="rzCh">Height</label><div class="in"><input id="rzCh" type="number" min="0.1" step="0.25" value="4"><span class="unit">in</span></div></div>
-      </div>
-
-      <div class="rz-opts">
-        <div class="field"><label for="rzDpi">Resolution</label><div class="in"><input id="rzDpi" type="number" min="72" max="1200" step="1" value="300"><span class="unit">DPI</span></div></div>
-        <label class="check"><input type="checkbox" id="rzPad"> pad canvas to the exact size</label>
-        <label class="check"><input type="checkbox" id="rzLoose"> save loose files, not a zip</label>
-        <span class="rz-note" id="rzNote"></span>
-      </div>
-
-      <div class="drop" id="rzDrop" tabindex="0" role="button" aria-label="Add PNG artwork to resize">
-        <strong>Drop PNGs here</strong>
-        <span>or click to browse — add as many as you like</span>
-      </div>
-      <input type="file" id="rzFile" accept="image/png,image/webp,image/jpeg" multiple hidden>
-
-      <div class="rz-bar">
-        <span class="rz-count" id="rzCount">no files yet</span>
-        <button class="btn btn-sm" id="rzClear" disabled>Clear</button>
-        <button class="btn btn-primary" id="rzGo" disabled>Resize &amp; download zip</button>
-      </div>
-
-      <ul class="rz-list" id="rzList"></ul>
-    </div>
-  </section>
-
-  <div class="adbar" id="adbar" hidden></div>
-</div>
-
-<div class="overlay hide" id="overlay">
-  <div class="card">
-    <h3 id="ovTitle">Writing PSD</h3>
-    <div class="track"><i id="ovBar"></i></div>
-    <p class="step" id="ovStep">preparing…</p>
+<div class="top">
+  <div class="wrap">
+    <a class="logo" href="./"><span class="mark" aria-hidden="true"></span><b>Gang Sheet Nester</b></a>
+    <nav>
+      <a class="btn ghost" href="https://github.com/dhanud72/dtf-gang-sheet-nester">Source</a>
+      <a class="btn" href="./tool.html">Open the tool</a>
+    </nav>
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="wrap">
+
+<header class="hero">
+  <div class="eyebrow">DTF transfer printing</div>
+  <h1>Stop paying for empty film</h1>
+  <p class="standfirst">
+    On a DTF roll you are charged for length, not for ink. Every centimetre of blank film
+    between your designs is money you have already spent. This is a guide to laying artwork
+    out properly — and a free tool that does the laying out for you.
+  </p>
+  <div class="cta-row">
+    <a class="btn" href="./tool.html">Open the tool</a>
+    <span class="cta-note">Free, no sign-up, nothing is uploaded.</span>
+  </div>
+</header>
+
+<div class="rule"></div>
+
+<main>
+
+<section>
+  <h2>What a gang sheet actually is</h2>
+  <p>
+    Direct-to-film printing runs on a continuous roll, usually 22 or 24 inches wide, and the
+    printer bills by the length it pulls through. A <strong>gang sheet</strong> is simply many
+    separate designs arranged onto one length of that film so they print in a single pass.
+  </p>
+  <p>
+    The width is fixed by the machine. The only thing you control is how much
+    <em>length</em> a job consumes — and that is decided entirely by how tightly the designs
+    are packed. Two shops printing the same forty stickers can easily differ by a third in film
+    used, and the one packing loosely is quietly burning the difference on every order.
+  </p>
+  <p>
+    Traditionally someone arranges this by hand in CorelDRAW or Photoshop. It is slow,
+    it is repetitive, and a human eye is not good at the geometry. Fitting rectangles into a
+    fixed-width strip with minimum waste is a well-studied computing problem, and a machine
+    is simply better at it.
+  </p>
+
+  <div class="callout">
+    <p class="lbl">Rule of thumb</p>
+    <p>
+      A hand-built sheet typically lands somewhere around 60–70% covered. Anything below
+      that and you are paying for a lot of nothing. Automatic nesting should be getting you
+      into the 80s on a mixed job.
+    </p>
+  </div>
+</section>
+
+<div class="adslot" id="ad-top"></div>
+
+<section>
+  <h2>Preparing artwork: the four things that matter</h2>
+  <p>
+    Most problems on a DTF sheet trace back to the file, not the printer. These four
+    catch nearly all of them.
+  </p>
+
+  <h3>1. The background must be genuinely transparent</h3>
+  <p>
+    DTF lays a white ink underbase wherever your artwork has pixels, then colour on top.
+    The printer decides where to put that white from the file's <strong>alpha channel</strong>.
+    If your file has no transparency — a JPEG, or a PNG flattened onto white — the machine
+    sees a solid rectangle and prints one: your logo arrives on a hard-edged white card.
+  </p>
+  <p>
+    Save as PNG with a transparent background. If you are handed a JPEG, the background has
+    to be cut out before it is any use. There is no setting on the printer that fixes this
+    afterwards.
+  </p>
+
+  <h3>2. Resolution is measured at the printed size, not in pixels</h3>
+  <p>
+    "It's a big file" means nothing on its own. What matters is pixels divided by printed
+    inches. A 600 × 600 px logo is fine at 2 inches and poor at 6, because the same pixels
+    are being stretched across three times the fabric.
+  </p>
+
+  <div class="tbl">
+    <table>
+      <thead>
+        <tr><th>Effective resolution</th><th>Result on fabric</th><th>Verdict</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="num">300 DPI</td><td>Sharp edges, clean small text</td><td class="ok">Ideal</td></tr>
+        <tr><td class="num">200–299 DPI</td><td>Sharp to the eye at arm's length</td><td class="ok">Fine</td></tr>
+        <tr><td class="num">150–199 DPI</td><td>Slightly soft edges; acceptable on large art</td><td class="mid">Workable</td></tr>
+        <tr><td class="num">100–149 DPI</td><td>Visibly soft, fine detail mushy</td><td class="mid">Risky</td></tr>
+        <tr><td class="num">Below 100 DPI</td><td>Blocky, jagged edges, unusable text</td><td class="no">Do not print</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    The arithmetic is simple: <code>pixels ÷ inches = DPI</code>. A 1200 px wide file printed
+    4 inches across gives 300 DPI. The same file at 6 inches gives 200. At 12 inches it is 100
+    and it will look it.
+  </p>
+  <p>
+    Enlarging a small file does not add detail — it only spreads the pixels you already had.
+    If the number comes out low, the answer is a bigger original or a smaller print, never
+    upscaling.
+  </p>
+
+  <h3>3. Trim the empty space around the design</h3>
+  <p>
+    This is the one that quietly costs the most. Artwork routinely arrives as a small design
+    floating in the middle of an enormous transparent canvas. Laid out by eye that padding
+    looks like nothing; laid out by machine it is treated as part of the design, and the
+    surrounding emptiness gets reserved as if it were ink.
+  </p>
+  <p>
+    Crop every file to the actual edges of the artwork before nesting. On a busy sheet this
+    alone can be the difference between one length of film and two.
+  </p>
+
+  <h3>4. Know whether your RIP mirrors</h3>
+  <p>
+    A DTF transfer is printed onto film, dusted with adhesive powder, cured, then pressed
+    <em>face down</em> onto the garment. The image therefore has to be laid down mirrored so
+    it reads correctly once flipped over.
+  </p>
+  <p>
+    Most RIP software does this for you. Some does not. It is worth knowing which yours is
+    before you find out on a run of fifty shirts with backwards lettering — anything with
+    text is where you notice.
+  </p>
+</section>
+
+<div class="rule"></div>
+
+<section>
+  <h2>How sizes work when artwork is not square</h2>
+  <p>
+    Transfers are usually sold in fixed size tiers — 2 × 2, 4 × 4, A4 and so on. That raises
+    an obvious question: what does "4 × 4" mean for a design that is long and thin?
+  </p>
+  <p>
+    The sane answer, and the one used here, is that a size is a <strong>box the artwork fits
+    inside</strong>. Nothing is stretched and nothing is cropped. The longest side of the design
+    grows until it reaches the size ordered, and the other side follows the original
+    proportions.
+  </p>
+
+  <div class="tbl">
+    <table>
+      <thead>
+        <tr><th>Artwork shape</th><th>Ordered as 2 × 2</th><th>Ordered as 4 × 4</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Square</td><td class="num">2 × 2 in</td><td class="num">4 × 4 in</td></tr>
+        <tr><td>Wide banner (3:1)</td><td class="num">2 × 0.67 in</td><td class="num">4 × 1.33 in</td></tr>
+        <tr><td>Tall design (1:5)</td><td class="num">0.4 × 2 in</td><td class="num">0.8 × 4 in</td></tr>
+        <tr><td>Photo (4:3)</td><td class="num">2 × 1.5 in</td><td class="num">4 × 3 in</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    Paper sizes such as A5, A4 and A3 are not square, so they turn to match the artwork. A
+    landscape design ordered as A4 should use the full 11.7 inch side rather than being held
+    to 8.3 — otherwise wide designs quietly get shortchanged against square ones at the same
+    price.
+  </p>
+</section>
+
+<div class="adslot" id="ad-mid"></div>
+
+<section>
+  <h2>Gaps, margins and the edge of the roll</h2>
+  <p>
+    Designs need a little space between them so they can be cut apart without clipping a
+    neighbour. Around <strong>3–4 mm (about ⅛ inch)</strong> is the usual working figure. It is
+    tempting to shrink this to save film, but a gap too tight costs far more in ruined
+    transfers than it saves in length.
+  </p>
+  <p>
+    Leave a margin at the edges of the roll too — roughly <strong>5 mm (¼ inch)</strong>.
+    Film feed is never perfectly straight over a long run, and artwork pressed right against
+    the edge is the first thing to suffer.
+  </p>
+
+  <div class="callout warn">
+    <p class="lbl">Worth knowing</p>
+    <p>
+      A Photoshop PSD cannot exceed <strong>30,000 pixels</strong> on a side, which at 300 DPI
+      is exactly <strong>100 inches</strong>. Longer runs have to be split into multiple sheets,
+      or printed at a lower resolution. This is a limit of the file format, not of your printer.
+    </p>
+  </div>
+</section>
+
+<div class="rule"></div>
+
+<section>
+  <h2>The tool</h2>
+  <p>
+    Everything above is what the nester does automatically. Drop in the PNGs for a job, set a
+    size and quantity for each, and it trims the transparent padding, packs the designs into
+    your roll width, and exports a layered PSD at the right resolution — one named layer per
+    sticker, so anything can still be nudged by hand.
+  </p>
+  <ul>
+    <li>Warns when a design is too low-resolution for the size ordered</li>
+    <li>Warns when a file has no transparent background</li>
+    <li>Optional mirroring, if your RIP does not do it</li>
+    <li>Splits long jobs across numbered sheets automatically</li>
+    <li>A second tab batch-resizes artwork to one size and hands it back as a zip</li>
+    <li>Exports a job sheet listing every design, size, quantity and price</li>
+  </ul>
+  <p>
+    It runs entirely in the browser. <strong>Your artwork is never uploaded anywhere</strong> —
+    there is no server behind it, and it keeps working with the network off.
+  </p>
+
+  <div class="endcta">
+    <h2>Try it on a real job</h2>
+    <p>
+      Build a sheet the way you normally would, then build the same one here and compare the
+      film used. That number is the whole argument.
+    </p>
+    <div class="cta-row" style="justify-content:center">
+      <a class="btn" href="./tool.html">Open the tool</a>
+      <a class="btn ghost" href="https://github.com/dhanud72/dtf-gang-sheet-nester">View the source</a>
+    </div>
+  </div>
+</section>
+
+<div class="rule"></div>
+
+<section>
+  <h2>Applying a transfer at home</h2>
+  <p>
+    DTF transfers do not strictly need a heat press. A domestic iron works, provided the
+    pressure is firm and even.
+  </p>
+  <ol class="steps">
+    <li><strong>Place</strong> the garment on a flat, hard surface — not a padded ironing board — and smooth out the wrinkles.</li>
+    <li><strong>Position</strong> the transfer with the printed side facing up.</li>
+    <li><strong>Cover</strong> it with a thin cloth or baking parchment.</li>
+    <li><strong>Heat</strong> the iron to its cotton setting, with steam off.</li>
+    <li><strong>Press</strong> firmly with constant pressure for 15–20 seconds without sliding the iron around.</li>
+    <li><strong>Peel</strong> after letting it cool for a few seconds, pulling the film back gently.</li>
+  </ol>
+  <p>
+    Afterwards: turn the garment inside out before washing, use a cold machine wash, and skip
+    bleach and the tumble dryer. Never iron directly onto the design itself. Give it 24 hours
+    before the first wash.
+  </p>
+</section>
+
+<div class="rule"></div>
+
+<section>
+  <h2>Common questions</h2>
+  <div class="faq">
+    <details>
+      <summary>Why does my design have a white box around it?</summary>
+      <p>The file has no transparent background — almost always because it is a JPEG, or a PNG that was flattened. DTF prints white ink wherever the file says there are pixels, so a solid background becomes a solid printed rectangle. The background has to be removed in the artwork before printing.</p>
+    </details>
+    <details>
+      <summary>Can you enlarge my small logo to A3?</summary>
+      <p>It can be enlarged, but no detail is created by doing so — the existing pixels are just spread further apart, and the result looks soft or blocky. Check pixels ÷ inches: below about 150 you will see it on the garment. A vector file or a larger original is the real fix.</p>
+    </details>
+    <details>
+      <summary>Should I send CMYK or RGB files?</summary>
+      <p>Send RGB. The RIP converts to the printer's own ink set and generates the white underbase from the transparency. Converting to CMYK yourself first usually dulls the colours without helping anything.</p>
+    </details>
+    <details>
+      <summary>Do I need to mirror the artwork before sending it?</summary>
+      <p>Normally no — mirroring is the printer's job, and most RIP software does it automatically. Send the artwork the right way round unless you have specifically been asked otherwise, or you risk it being mirrored twice.</p>
+    </details>
+    <details>
+      <summary>Why is my gang sheet longer than I expected?</summary>
+      <p>Usually transparent padding around the designs, which reserves space as though it were artwork. Trimming each file to the edge of its design is the single biggest saving available. Awkward shapes and a large gap setting account for most of the rest.</p>
+    </details>
+    <details>
+      <summary>Can several customers' orders share one sheet?</summary>
+      <p>Yes, and it is normally the cheapest way to print. The practical difficulty is sorting afterwards, so name the layers or keep a job sheet listing what belongs to whom before the film is cut.</p>
+    </details>
+  </div>
+</section>
+
+</main>
+</div>
+
+<footer>
+  <div class="wrap">
+    <div class="fcol">
+      <h4>Sangeetha Arts &amp; Sculptures</h4>
+      <p>DTF transfers, ready to press.</p>
+      <p>Custom designs · bulk orders · pan-India shipping</p>
+    </div>
+    <div class="fcol">
+      <h4>Order</h4>
+      <a href="https://wa.me/919448597227">WhatsApp 94485 97227</a>
+      <a href="https://instagram.com/sangeethaartandsculptures">Instagram</a>
+    </div>
+    <div class="fcol">
+      <h4>Tool</h4>
+      <a href="./tool.html">Open the nester</a>
+      <a href="https://github.com/dhanud72/dtf-gang-sheet-nester">Source on GitHub</a>
+    </div>
+    <p class="fine">
+      The gang sheet nester is free and open source under the MIT licence. It runs in your
+      browser and does not upload your artwork. Prices and sizes shown in the tool are this
+      shop's own and can be changed in the source.
+    </p>
+  </div>
+</footer>
 
 <script>
-/* ============================================================
-   Gang Sheet Nester
-   PNG artwork -> nested gang sheet -> layered PSD, all client-side.
-   ============================================================ */
-
-const $ = id => document.getElementById(id);
-
-const el = {
-  units:$('fUnits'), dpi:$('fDpi'), roll:$('fRoll'), len:$('fLen'), gap:$('fGap'), edge:$('fEdge'),
-  mirror:$('fMirror'), spread:$('fSpread'), exportCsv:$('exportCsv'),
-  pxNote:$('pxNote'), limitHint:$('limitHint'),
-  drop:$('drop'), file:$('file'), items:$('items'), itemNote:$('itemNote'),
-  bulkW:$('bulkW'), bulkApply:$('bulkApply'), bulkRotate:$('bulkRotate'),
-  tabs:$('tabs'), preview:$('preview'), empty:$('empty'), wrap:$('canvasWrap'),
-  zoomIn:$('zoomIn'), zoomOut:$('zoomOut'), zoomFit:$('zoomFit'), zoomVal:$('zoomVal'),
-  exportPsd:$('exportPsd'),
-  stFill:$('stFill'), stSheets:$('stSheets'), stFilm:$('stFilm'), stPieces:$('stPieces'), stValue:$('stValue'),
-  sheetBox:$('sheetBox'), dimAcross:$('dimAcross'), dimDown:$('dimDown'), sheetCaption:$('sheetCaption'),
-  bulkPreset:$('bulkPreset'), bulkWWrap:$('bulkWWrap'), stats:$('stats'),
-  modeNest:$('modeNest'), modeResize:$('modeResize'), viewNest:$('viewNest'), viewResize:$('viewResize'),
-  rzSizes:$('rzSizes'), rzCustom:$('rzCustom'), rzCw:$('rzCw'), rzCh:$('rzCh'), rzDpi:$('rzDpi'),
-  rzPad:$('rzPad'), rzLoose:$('rzLoose'), rzNote:$('rzNote'), rzDrop:$('rzDrop'), rzFile:$('rzFile'), rzList:$('rzList'),
-  rzCount:$('rzCount'), rzClear:$('rzClear'), rzGo:$('rzGo'),
-  overlay:$('overlay'), ovTitle:$('ovTitle'), ovBar:$('ovBar'), ovStep:$('ovStep'),
-  toast:$('toast'),
-};
-
-/* PSD hard limits (Photoshop refuses anything larger) */
-const PSD_MAX_PX = 30000;
-
-/* The shop's price list. Sizes are boxes in inches — artwork is scaled to fit
-   inside, never stretched, so a wide design fills the width and a tall one
-   fills the height. Prices are rupees per piece. */
-const PRESETS = [
-  { key:'2x2', label:'2 × 2 in',    w:2,    h:2,    price:20  },
-  { key:'4x4', label:'4 × 4 in',    w:4,    h:4,    price:39  },
-  { key:'6x6', label:'6 × 6 in',    w:6,    h:6,    price:69  },
-  { key:'a5',  label:'A5 5.8 × 8.3',w:5.8,  h:8.3,  price:99  },
-  { key:'a4',  label:'A4 8.3 × 11.7',w:8.3, h:11.7, price:149 },
-  { key:'a3',  label:'A3 11.7 × 16.5',w:11.7,h:16.5,price:249 },
-];
-const PRESET_MAP = Object.fromEntries(PRESETS.map(p => [p.key, p]));
-const DEFAULT_PRESET = '4x4';
-
-/* Fit an aspect ratio inside a box: the longer side of the artwork reaches
-   the size that was ordered and the other stays proportional. Nothing is ever
-   stretched or cropped. A 3:1 design at 4 × 4 comes out 4 × 1.33.
-   A non-square paper size turns to match the artwork, so a landscape design
-   ordered as A4 gets the full 11.7 in rather than being held to 8.3 in. */
-function fitInBox(ar, box){
-  let bw = box.w, bh = box.h;
-  if(bw !== bh && (ar > 1) !== (bw > bh)) [bw, bh] = [bh, bw];
-  let w = bw, h = bw / ar;
-  if(h > bh){ h = bh; w = bh * ar; }
-  return { w, h };
-}
-
-/* Printed size of one piece, in inches. */
-function pieceSizeIn(it){
-  const ar = it.srcW / it.srcH;
-  const box = PRESET_MAP[it.preset];
-  if(box) return fitInBox(ar, box);
-  const w = toMM(it.widthU || 1) / 25.4;
-  return { w, h: w / ar };
-}
-const priceOf = it => (PRESET_MAP[it.preset]?.price ?? 0);
-const money = n => '₹' + n.toLocaleString('en-IN');
-
-/* The size is order information, not image information — the same PNG can be
-   sold at any tier. But if whoever prepared the file wrote the size into its
-   name ("luffy_4x4.png", "panda A4.png", "eagle-6×6-qty3.png"), read it, so
-   a well-named job needs no typing at all. */
-function readOrderFromName(filename){
-  const s = filename.toLowerCase();
-  const out = {};
-  const box = s.match(/(\d+(?:\.\d+)?)\s*[x×]\s*(\d+(?:\.\d+)?)/);
-  if(box){
-    const w = +box[1], h = +box[2];
-    const hit = PRESETS.find(p => Math.abs(p.w-w) < 0.2 && Math.abs(p.h-h) < 0.2);
-    if(hit) out.preset = hit.key;
-  }
-  if(!out.preset){
-    /* \b fails on "band_a5" because _ is a word character, and underscores are
-       the most common separator in these filenames */
-    const paper = s.match(/(?:^|[^a-z0-9])a([345])(?:[^a-z0-9]|$)/);
-    if(paper) out.preset = 'a' + paper[1];
-  }
-  /* Only an explicit "qty" counts. A bare x is unusable here — in "4x4" it
-     is the size, and guessing wrong silently multiplies the customer's order. */
-  const qty = s.match(/qty[\s_-]*(\d{1,3})/);
-  if(qty && +qty[1] > 0) out.qty = Math.min(999, +qty[1]);
-  return out;
-}
-
-const state = {
-  items: [],          // {id,name,src,srcW,srcH,widthU,qty,rotate}
-  sheets: [],         // packing result
-  active: 0,
-  zoom: null,         // null = fit
-  seq: 0,
-};
-
-/* ---------- units ---------- */
-const unit = () => el.units.value;
-const toMM = v => unit() === 'in' ? v * 25.4 : v;
-const fromMM = v => unit() === 'in' ? v / 25.4 : v;
-const mmToPx = mm => mm / 25.4 * (+el.dpi.value || 300);
-const pxToMM = px => px * 25.4 / (+el.dpi.value || 300);
-
-function cfg(){
-  return {
-    dpi: clamp(+el.dpi.value || 300, 72, 1200),
-    rollMM: Math.max(10, toMM(+el.roll.value || 0)),
-    lenMM: Math.max(10, toMM(+el.len.value || 0)),
-    gapMM: Math.max(0, toMM(+el.gap.value || 0)),
-    edgeMM: Math.max(0, toMM(+el.edge.value || 0)),
-  };
-}
-const clamp = (v,a,b) => Math.min(b, Math.max(a, v));
-const fmt = (n,d=1) => n.toLocaleString(undefined,{minimumFractionDigits:d,maximumFractionDigits:d});
-
-function toast(msg, bad){
-  el.toast.textContent = msg;
-  el.toast.classList.toggle('bad', !!bad);
-  el.toast.classList.add('show');
-  clearTimeout(toast._t);
-  toast._t = setTimeout(() => el.toast.classList.remove('show'), 3800);
-}
-
-/* ============================================================
-   1. Intake — decode, trim transparent padding
-   ============================================================ */
-
-async function addFiles(fileList){
-  const files = [...fileList].filter(f => /^image\//.test(f.type));
-  if(!files.length) return;
-  let failed = 0, detected = 0, opaque = 0;
-  for(const f of files){
-    try{
-      const bmp = await createImageBitmap(f);
-      const trimmed = trimAlpha(bmp);
-      bmp.close?.();
-      if(!trimmed){ failed++; continue; }
-      const fromName = readOrderFromName(f.name);
-      if(fromName.preset) detected++;
-      if(trimmed.opaque) opaque++;
-      state.items.push({
-        id: ++state.seq,
-        name: f.name.replace(/\.[^.]+$/,''),
-        src: trimmed.canvas,
-        srcW: trimmed.canvas.width,
-        srcH: trimmed.canvas.height,
-        opaque: !!trimmed.opaque,
-        preset: fromName.preset || DEFAULT_PRESET,
-        widthU: null,           // only used when preset is 'custom'
-        qty: fromName.qty || 1,
-        rotate: el.bulkRotate.checked,
-        thumb: thumbURL(trimmed.canvas),
-      });
-      const it = state.items[state.items.length-1];
-      it.widthU = roundU(fromMM(defaultWidthMM(it)));
-    }catch(err){ failed++; }
-  }
-  if(failed) toast(`${failed} file${failed>1?'s':''} could not be read`, true);
-  else if(opaque) toast(`${opaque} file${opaque>1?'s have':' has'} no transparent background — it will print as a solid rectangle`, true);
-  else if(detected) toast(`Size read from the filename on ${detected} file${detected>1?'s':''}`);
-  renderItems(); repack();
-}
-
-/* First guess at printed width: honour the PNG's own pixel size at the
-   working DPI, but keep it inside something sane for a sticker. */
-function defaultWidthMM(it){
-  const c = cfg();
-  const natural = pxToMM(it.srcW);
-  return clamp(natural, 10, c.rollMM - c.edgeMM*2);
-}
-
-/* Crop to the true alpha bounding box. This is the single biggest source
-   of wasted film — artwork routinely ships with huge empty canvases. */
-function trimAlpha(bmp){
-  const w = bmp.width, h = bmp.height;
-  const c = document.createElement('canvas');
-  c.width = w; c.height = h;
-  const ctx = c.getContext('2d', { willReadFrequently:true });
-  ctx.drawImage(bmp, 0, 0);
-
-  let data;
-  try{ data = ctx.getImageData(0,0,w,h).data; }
-  catch(e){ return { canvas:c, opaque:true }; }
-
-  let top=-1, left=w, right=-1, bottom=-1;
-  let clear = 0;                               // count of see-through pixels
-  const ALPHA = 4;  // ignore near-invisible antialiasing dust
-  for(let y=0;y<h;y++){
-    let rowL=-1, rowR=-1;
-    let p = y*w*4 + 3;
-    for(let x=0;x<w;x++, p+=4){
-      if(data[p] > ALPHA){ if(rowL<0) rowL=x; rowR=x; }
-      if(data[p] < 250) clear++;
-    }
-    if(rowL>=0){
-      if(top<0) top=y;
-      bottom=y;
-      if(rowL<left) left=rowL;
-      if(rowR>right) right=rowR;
-    }
-  }
-  if(top<0) return null;                       // fully transparent
-
-  /* A file with essentially no transparent pixels is a photo or a flattened
-     JPEG. It will print as a solid rectangle of ink with a hard edge, which
-     is almost never what a sticker order wants. */
-  const opaque = clear < w*h*0.005;
-
-  if(top===0 && left===0 && right===w-1 && bottom===h-1) return { canvas:c, opaque };
-
-  const nw = right-left+1, nh = bottom-top+1;
-  const out = document.createElement('canvas');
-  out.width = nw; out.height = nh;
-  out.getContext('2d').drawImage(c, left, top, nw, nh, 0, 0, nw, nh);
-  return { canvas: out, opaque };
-}
-
-/* How many real pixels per printed inch this design will have. Under about
-   150 the print goes soft; under 100 it is visibly blocky. */
-function effectiveDpi(srcPx, inches){
-  return inches > 0 ? srcPx / inches : 0;
-}
-function dpiGrade(d){
-  if(d >= 200) return { tone:'good', word:'sharp' };
-  if(d >= 150) return { tone:'', word:'ok' };
-  if(d >= 100) return { tone:'warn', word:'soft' };
-  return { tone:'bad', word:'too low' };
-}
-
-/* Inches need three decimals, or a 1/8" gap comes back as 0.13" after a
-   round-trip through millimetres. */
-const roundU = n => unit() === 'in' ? Math.round(n*1000)/1000 : Math.round(n*100)/100;
-
-/* Small preview bitmap. Full-size artwork as a data URL would hold tens of
-   megabytes per row in the DOM. */
-function thumbURL(src, max = 84){
-  const s = Math.min(1, max / Math.max(src.width, src.height));
-  const c = document.createElement('canvas');
-  c.width  = Math.max(1, Math.round(src.width * s));
-  c.height = Math.max(1, Math.round(src.height * s));
-  const ctx = c.getContext('2d');
-  ctx.imageSmoothingQuality = 'high';
-  ctx.drawImage(src, 0, 0, c.width, c.height);
-  return c.toDataURL('image/png');
-}
-
-/* ============================================================
-   2. Packing — MaxRects (best short side fit) into a fixed-width strip
-   ============================================================ */
-
-/* Two placement heuristics and four sort orders. Neither heuristic wins
-   everywhere — best-short-side-fit packs a tall open sheet well but degrades
-   badly once the sheet length is capped, where bottom-left stays stable. So
-   the packer runs every combination and keeps whichever uses the least film.
-   It is pure arithmetic on rectangles, so eight attempts cost milliseconds
-   and routinely save centimetres of roll. */
-const SORTS = [
-  (a,b) => Math.max(b.w,b.h) - Math.max(a.w,a.h) || b.w*b.h - a.w*a.h,
-  (a,b) => b.w*b.h - a.w*a.h,
-  (a,b) => b.h - a.h || b.w - a.w,
-  (a,b) => b.w - a.w || b.h - a.h,
-];
-const MODES = ['bssf','bl'];
-
-const usedHeight = placed => placed.reduce((m,p) => Math.max(m, p.y + p.h), 0);
-
-function packAll(boxes, binW, binH, band){
-  const sorts = boxes.length > 260 ? [0] : [0,1,2,3];   // keep huge jobs snappy
-  let best = null;
-  for(const mode of MODES){
-    for(const si of sorts){
-      const run = runPack(boxes.slice().sort(SORTS[si]), binW, binH, mode, band);
-      const film = run.sheets.reduce((a,s) => a + usedHeight(s), 0);
-      const cost = run.unplaced.length * 1e9 + film;    // placing everything comes first
-      if(!best || cost < best.cost) best = { ...run, cost };
-    }
-  }
-  return best;
-}
-
-function runPack(boxes, binW, binH, mode, band){
-  const sheets = [];
-  let remaining = boxes;
-  let guard = 0;
-  while(remaining.length && guard++ < 500){
-    const { placed, left } = packOne(remaining, binW, binH, mode, band);
-    if(!placed.length) break;                  // nothing fits at all
-    sheets.push(placed);
-    remaining = left;
-  }
-  return { sheets, unplaced: remaining };
-}
-
-function packOne(boxes, binW, binH, mode, band){
-  const free = [{ x:0, y:0, w:binW, h:binH }];
-  const placed = [], left = [];
-  const lastY = band ? new Map() : null;      // where each design last landed
-
-  for(const box of boxes){
-    const spot = findSpot(free, box, binW, binH, mode, lastY, band);
-    if(!spot){ left.push(box); continue; }
-    placed.push(spot);
-    if(lastY) lastY.set(box.id, spot.y);
-    splitFree(free, spot);
-    pruneFree(free);
-  }
-  return { placed, left };
-}
-
-/* lexicographic compare of the scoring keys below */
-function lower(a, b){
-  for(let i=0;i<a.length;i++){ if(a[i] !== b[i]) return a[i] < b[i]; }
-  return false;
-}
-
-function findSpot(free, box, binW, binH, mode, lastY, band){
-  let best = null, bestKey = null;
-  const tries = box.rotate && box.w !== box.h
-    ? [[box.w,box.h,false],[box.h,box.w,true]]
-    : [[box.w,box.h,false]];
-  const prev = lastY ? lastY.get(box.id) : undefined;
-
-  for(const [w,h,rot] of tries){
-    if(w > binW || h > binH) continue;
-    for(const f of free){
-      if(f.w < w || f.h < h) continue;
-      const dw = f.w - w, dh = f.h - h;
-      const key = mode === 'bl'
-        ? [f.y + h, f.x, Math.min(dw,dh)]                    // keep the sheet short
-        : [Math.min(dw,dh), Math.max(dw,dh), f.y, f.x];      // waste the least offcut
-      /* a dropped nozzle ruins a horizontal band, so optionally push copies of
-         one design out of each other's band before anything else is scored */
-      if(prev !== undefined && Math.abs(f.y - prev) < band) key.unshift(1);
-      else if(lastY) key.unshift(0);
-      if(!bestKey || lower(key, bestKey)){
-        best = { ...box, x:f.x, y:f.y, w, h, rot };
-        bestKey = key;
-      }
-    }
-  }
-  return best;
-}
-
-function splitFree(free, used){
-  for(let i=free.length-1; i>=0; i--){
-    const f = free[i];
-    if(used.x >= f.x+f.w || used.x+used.w <= f.x || used.y >= f.y+f.h || used.y+used.h <= f.y) continue;
-    free.splice(i,1);
-    if(used.x > f.x)                 free.push({ x:f.x, y:f.y, w:used.x-f.x, h:f.h });
-    if(used.x+used.w < f.x+f.w)      free.push({ x:used.x+used.w, y:f.y, w:f.x+f.w-(used.x+used.w), h:f.h });
-    if(used.y > f.y)                 free.push({ x:f.x, y:f.y, w:f.w, h:used.y-f.y });
-    if(used.y+used.h < f.y+f.h)      free.push({ x:f.x, y:used.y+used.h, w:f.w, h:f.y+f.h-(used.y+used.h) });
-  }
-}
-
-function pruneFree(free){
-  for(let i=free.length-1; i>=0; i--){
-    for(let j=free.length-1; j>=0; j--){
-      if(i===j) continue;
-      const a = free[i], b = free[j];
-      if(a.x>=b.x && a.y>=b.y && a.x+a.w<=b.x+b.w && a.y+a.h<=b.y+b.h){ free.splice(i,1); break; }
-    }
-  }
-}
-
-/* ---------- build the job, run the packer, keep the results ---------- */
-
-function repack(){
-  const c = cfg();
-  const gapPx  = Math.round(mmToPx(c.gapMM));
-  const edgePx = Math.round(mmToPx(c.edgeMM));
-  const rollPx = Math.round(mmToPx(c.rollMM));
-  const maxPx  = Math.min(Math.round(mmToPx(c.lenMM)), PSD_MAX_PX);
-  const binW = rollPx - edgePx*2;
-  const binH = maxPx  - edgePx*2;
-
-  updateLimits(rollPx, maxPx);
-
-  const boxes = [];
-  let oversize = 0;
-  for(const it of state.items){
-    const size = pieceSizeIn(it);
-    const wPx = Math.max(1, Math.round(mmToPx(size.w * 25.4)));
-    const hPx = Math.max(1, Math.round(mmToPx(size.h * 25.4)));
-    it._wPx = wPx; it._hPx = hPx;
-    const fitsFlat = wPx <= binW && hPx <= binH;
-    const fitsTurn = it.rotate && hPx <= binW && wPx <= binH;
-    it._over = !(fitsFlat || fitsTurn);
-    if(it._over){ oversize++; continue; }
-    for(let n=0; n<Math.max(1, it.qty|0); n++){
-      boxes.push({ id:it.id, copy:n+1, art:it.src, name:it.name,
-                   artW:wPx, artH:hPx, w:wPx+gapPx, h:hPx+gapPx, rotate:it.rotate });
-    }
-  }
-
-  if(!boxes.length){
-    state.sheets = [];
-    state.active = 0;
-    renderTabs(); renderPreview(); updateStats(0, oversize); refreshDims();
-    return;
-  }
-
-  /* two inches of separation is enough to survive a single nozzle dropout */
-  const band = el.spread.checked ? Math.round(mmToPx(50.8)) : 0;
-  const { sheets, unplaced } = packAll(boxes, binW, binH, band);
-
-  state.sheets = sheets.map(placed => {
-    let usedH = 0, artArea = 0;
-    for(const p of placed){
-      usedH = Math.max(usedH, p.y + p.h);
-      artArea += p.artW * p.artH;
-    }
-    const height = Math.min(PSD_MAX_PX, usedH + edgePx*2);
-    return {
-      width: rollPx, height,
-      pieces: placed.map(p => ({
-        id:p.id, name:p.name, copy:p.copy, art:p.art,
-        x: p.x + edgePx, y: p.y + edgePx,
-        w: p.rot ? p.artH : p.artW,
-        h: p.rot ? p.artW : p.artH,
-        rot: p.rot,
-      })),
-      fill: artArea / (rollPx * height),
-    };
-  });
-
-  state.active = clamp(state.active, 0, Math.max(0, state.sheets.length-1));
-  renderTabs(); renderPreview(); updateStats(unplaced.length, oversize);
-  /* the derived height per design is only known once packing has run */
-  refreshDims();
-}
-
-function updateLimits(rollPx, maxPx){
-  const c = cfg();
-  el.pxNote.textContent = `${rollPx} × ${maxPx} px @ ${c.dpi} DPI`;
-  const capMM = pxToMM(PSD_MAX_PX);
-
-  /* Only a roll too wide to save is an actual problem. Sheets rolling over
-     to the next PSD is normal operation, so it reads as a plain note. */
-  if(rollPx > PSD_MAX_PX){
-    el.limitHint.textContent = `Roll width is ${rollPx} px, past the ${PSD_MAX_PX} px a PSD can hold. Lower the DPI or the roll width.`;
-    el.limitHint.className = 'hint warn';
-  }else if(Math.round(mmToPx(c.lenMM)) > PSD_MAX_PX){
-    el.limitHint.textContent = `Sheets run to ${fmt(fromMM(capMM),0)} ${unit()} each, then continue on the next numbered sheet.`;
-    el.limitHint.className = 'hint';
-  }else{
-    el.limitHint.textContent = '';
-    el.limitHint.className = 'hint';
-  }
-}
-
-function updateStats(unplaced, oversize){
-  const sheets = state.sheets;
-  const pieces = sheets.reduce((n,s) => n + s.pieces.length, 0);
-  const totalFill = sheets.length
-    ? sheets.reduce((a,s) => a + s.fill * s.width * s.height, 0) /
-      sheets.reduce((a,s) => a + s.width * s.height, 0)
-    : 0;
-  const filmMM = sheets.reduce((a,s) => a + pxToMM(s.height), 0);
-
-  const value = state.items.reduce((a,it) => a + priceOf(it) * Math.max(1, it.qty|0), 0);
-
-  el.stSheets.textContent = sheets.length;
-  el.stPieces.textContent = pieces;
-  el.stValue.textContent = value ? money(value) : '—';
-  el.stFill.textContent = sheets.length ? Math.round(totalFill*100) + '%' : '—';
-  el.stFilm.textContent = sheets.length
-    ? (unit()==='in' ? fmt(filmMM/25.4,1)+'"' : fmt(filmMM/1000,2)+' m')
-    : '—';
-
-  const tile = el.stFill.parentElement;
-  tile.dataset.tone = !sheets.length ? '' : totalFill>=.72 ? 'good' : totalFill>=.55 ? 'warn' : 'bad';
-
-  el.exportPsd.disabled = !sheets.length;
-  el.exportCsv.disabled = !state.items.length;
-
-  const n = state.items.length;
-  el.itemNote.textContent = n ? `${n} design${n>1?'s':''} · ${pieces} piece${pieces===1?'':'s'}` : 'no files';
-
-  /* repack runs on every keystroke — only speak up when the situation changes */
-  const sig = `${oversize}|${unplaced}`;
-  if(sig !== updateStats._last){
-    updateStats._last = sig;
-    if(oversize) toast(`${oversize} design${oversize>1?'s are':' is'} too big for this roll — pick a smaller size`, true);
-    else if(unplaced) toast(`${unplaced} piece${unplaced>1?'s':''} could not be placed`, true);
-  }
-}
-
-/* ============================================================
-   3. Item list
-   ============================================================ */
-
-const ICON_ROT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>';
-
-function renderItems(){
-  el.items.innerHTML = '';
-  for(const it of state.items){
-    const li = document.createElement('li');
-    li.className = 'item' + (it._over ? ' bad' : '');
-
-    const thumb = document.createElement('div');
-    thumb.className = 'thumb';
-    const img = document.createElement('img');
-    img.alt = ''; img.src = it.thumb;
-    thumb.appendChild(img);
-
-    const meta = document.createElement('div');
-    meta.className = 'imeta';
-    const name = document.createElement('div');
-    name.className = 'iname'; name.textContent = it.name; name.title = it.name;
-
-    const row = document.createElement('div');
-    row.className = 'irow';
-
-    const pBox = document.createElement('div');
-    pBox.className = 'in p-in';
-    const pSel = document.createElement('select');
-    pSel.setAttribute('aria-label', `print size for ${it.name}`);
-    for(const p of PRESETS){
-      const o = document.createElement('option');
-      o.value = p.key; o.textContent = p.label;
-      pSel.appendChild(o);
-    }
-    const oCustom = document.createElement('option');
-    oCustom.value = 'custom'; oCustom.textContent = 'Custom width…';
-    pSel.appendChild(oCustom);
-    pSel.value = it.preset;
-    pBox.appendChild(pSel);
-
-    const wBox = document.createElement('div');
-    wBox.className = 'in w-in';
-    if(it.preset !== 'custom') wBox.hidden = true;
-    const wIn = document.createElement('input');
-    wIn.type='number'; wIn.min='0.1'; wIn.step = unit()==='in' ? '0.25' : '1'; wIn.value = it.widthU;
-    wIn.setAttribute('aria-label', `custom width of ${it.name}`);
-    const wUnit = document.createElement('span');
-    wUnit.className='unit'; wUnit.textContent = unit();
-    wBox.append(wIn, wUnit);
-
-    const qBox = document.createElement('div');
-    qBox.className = 'in q-in';
-    const qIn = document.createElement('input');
-    qIn.type='number'; qIn.min='1'; qIn.step='1'; qIn.value = it.qty;
-    qIn.setAttribute('aria-label', `quantity of ${it.name}`);
-    const qUnit = document.createElement('span');
-    qUnit.className='unit'; qUnit.textContent='×';
-    qBox.append(qIn, qUnit);
-
-    row.append(pBox, wBox, qBox);
-
-    const info = document.createElement('div');
-    info.className = 'dims';
-    meta.append(name, row, info);
-
-    const ctrl = document.createElement('div');
-    ctrl.className = 'icontrols';
-    const rot = document.createElement('button');
-    rot.className = 'tog'; rot.innerHTML = ICON_ROT;
-    rot.setAttribute('aria-pressed', String(it.rotate));
-    rot.title = it.rotate ? 'Rotation allowed — click to lock upright' : 'Locked upright — click to allow rotation';
-    const del = document.createElement('button');
-    del.className = 'x'; del.textContent = '✕'; del.title = `Remove ${it.name}`;
-    ctrl.append(rot, del);
-
-    pSel.addEventListener('change', () => {
-      it.preset = pSel.value;
-      wBox.hidden = it.preset !== 'custom';
-      repack();
-    });
-    wIn.addEventListener('input', () => { it.widthU = +wIn.value || 1; repack(); });
-    qIn.addEventListener('input', () => { it.qty = clamp(+qIn.value|0, 1, 999); repack(); });
-    rot.addEventListener('click', () => {
-      it.rotate = !it.rotate;
-      rot.setAttribute('aria-pressed', String(it.rotate));
-      rot.title = it.rotate ? 'Rotation allowed — click to lock upright' : 'Locked upright — click to allow rotation';
-      repack();
-    });
-    del.addEventListener('click', () => {
-      state.items = state.items.filter(x => x !== it);
-      renderItems(); repack();
-    });
-
-    li.append(thumb, meta, ctrl);
-    el.items.appendChild(li);
-  }
-}
-
-/* cheap refresh of just the derived numbers, so typing stays smooth */
-function refreshDims(){
-  [...el.items.children].forEach((li,i) => {
-    const it = state.items[i];
-    if(!it) return;
-    li.classList.toggle('bad', !!it._over);
-    const d = li.querySelector('.dims');
-    d.textContent = ''; d.style.color = '';
-    if(it._over){
-      d.textContent = 'too large for this roll';
-      d.style.color = 'var(--bad)';
-      return;
-    }
-    const s = pieceSizeIn(it);
-    d.textContent = unit()==='in'
-      ? `${roundU(s.w)} × ${roundU(s.h)} in`
-      : `${roundU(s.w*25.4)} × ${roundU(s.h*25.4)} mm`;
-    const p = priceOf(it);
-    if(p){
-      const tag = document.createElement('span');
-      tag.className = 'price';
-      tag.textContent = `${money(p)} × ${it.qty} = ${money(p * it.qty)}`;
-      d.append(' · ', tag);
-    }
-
-    /* resolution and background warnings live on the row that caused them */
-    const eff = effectiveDpi(it.srcW, s.w);
-    const g = dpiGrade(eff);
-    if(g.tone === 'warn' || g.tone === 'bad'){
-      const w = document.createElement('span');
-      w.className = 'flag ' + g.tone;
-      w.textContent = `${Math.round(eff)} DPI ${g.word}`;
-      w.title = `This artwork is ${it.srcW}×${it.srcH} px. Printed at this size that is only ${Math.round(eff)} DPI — it will look ${g.word}. Ask for a bigger file or print it smaller.`;
-      d.append(' ', w);
-    }
-    if(it.opaque){
-      const w = document.createElement('span');
-      w.className = 'flag warn';
-      w.textContent = 'no transparency';
-      w.title = 'This file has no transparent background, so it will print as a solid rectangle of ink with a hard edge.';
-      d.append(' ', w);
-    }
-  });
-}
-
-/* ============================================================
-   4. Drawing — one routine, so preview, layers and the flattened
-      composite can never disagree about where a piece goes
-      ============================================================ */
-
-const mirrored = () => el.mirror.checked;
-
-/* Where a piece sits on the sheet once mirroring is taken into account. */
-const pieceX = (p, sheetW) => mirrored() ? sheetW - p.x - p.w : p.x;
-
-/* Paint one piece into the box (bx,by,bw,bh), honouring rotation and mirror. */
-function drawPiece(ctx, p, bx, by, bw, bh){
-  ctx.save();
-  ctx.translate(bx, by);
-  if(mirrored()){ ctx.translate(bw, 0); ctx.scale(-1, 1); }
-  if(p.rot){
-    ctx.translate(bw, 0);
-    ctx.rotate(Math.PI/2);
-    ctx.drawImage(p.art, 0, 0, bh, bw);
-  }else{
-    ctx.drawImage(p.art, 0, 0, bw, bh);
-  }
-  ctx.restore();
-}
-
-/* ============================================================
-   5. Preview
-   ============================================================ */
-
-function renderTabs(){
-  el.tabs.innerHTML = '';
-  state.sheets.forEach((s,i) => {
-    const b = document.createElement('button');
-    b.className = 'tab'; b.setAttribute('role','tab');
-    b.setAttribute('aria-selected', String(i === state.active));
-    const wU = fmt(fromMM(pxToMM(s.width)), 2);
-    const hU = fmt(fromMM(pxToMM(s.height)), 2);
-    b.textContent = `Sheet ${i+1} · ${wU} × ${hU} ${unit()} · ${Math.round(s.fill*100)}%`;
-    b.addEventListener('click', () => { state.active = i; renderTabs(); renderPreview(); });
-    el.tabs.appendChild(b);
-  });
-}
-
-function renderPreview(){
-  const sheet = state.sheets[state.active];
-  const cv = el.preview;
-  if(!sheet){
-    el.sheetBox.hidden = true; el.empty.classList.remove('hide');
-    el.zoomVal.textContent = 'fit';
-    return;
-  }
-  el.sheetBox.hidden = false; el.empty.classList.add('hide');
-
-  const avail = {
-    w: Math.max(120, el.wrap.clientWidth  - 74),   // room for the side ruler
-    h: Math.max(120, el.wrap.clientHeight - 96),   // and the labels above/below
-  };
-  const fit = Math.min(avail.w / sheet.width, avail.h / sheet.height);
-  const scale = state.zoom ?? fit;
-  el.zoomVal.textContent = state.zoom ? Math.round(scale*100*10)/10 + '%' : 'fit';
-
-  const W = Math.max(1, Math.round(sheet.width * scale));
-  const H = Math.max(1, Math.round(sheet.height * scale));
-  const dpr = Math.min(2, window.devicePixelRatio || 1);
-  cv.width = Math.round(W*dpr); cv.height = Math.round(H*dpr);
-  cv.style.width = W+'px'; cv.style.height = H+'px';
-
-  /* both dimensions, in the working unit plus the pixels the RIP will see */
-  const u = unit()==='in' ? 'in' : 'mm';
-  const wU = fmt(fromMM(pxToMM(sheet.width)), 2);
-  const hU = fmt(fromMM(pxToMM(sheet.height)), 2);
-  el.dimAcross.textContent = `${wU} ${u} wide`;
-  el.dimDown.textContent   = `${hU} ${u} long`;
-  el.sheetCaption.textContent =
-    `Sheet ${state.active+1} of ${state.sheets.length} · ${wU} × ${hU} ${u} · ` +
-    `${sheet.width} × ${sheet.height} px @ ${cfg().dpi} DPI · ${Math.round(sheet.fill*100)}% filled`;
-
-  const ctx = cv.getContext('2d');
-  ctx.setTransform(dpr,0,0,dpr,0,0);
-  ctx.clearRect(0,0,W,H);
-  ctx.imageSmoothingQuality = 'high';
-
-  for(const p of sheet.pieces){
-    drawPiece(ctx, p, pieceX(p, sheet.width)*scale, p.y*scale, p.w*scale, p.h*scale);
-  }
-
-  /* edge margin guide — where the film is intentionally left clear */
-  const edgePx = Math.round(mmToPx(cfg().edgeMM));
-  if(edgePx > 0){
-    ctx.save();
-    ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--cyan').trim() || '#0a7382';
-    ctx.globalAlpha = .5; ctx.setLineDash([5,4]); ctx.lineWidth = 1;
-    ctx.strokeRect(edgePx*scale, edgePx*scale, (sheet.width-edgePx*2)*scale, (sheet.height-edgePx*2)*scale);
-    ctx.restore();
-  }
-}
-
-/* ============================================================
-   5. PSD writer  —  8BPS, RGB/8, RLE, one layer per piece
-   ============================================================ */
-
-class Bytes{
-  constructor(){ this.parts=[]; this.len=0; }
-  raw(u8){ this.parts.push(u8); this.len += u8.length; return this; }
-  u8(v){ return this.raw(new Uint8Array([v & 255])); }
-  u16(v){ const a=new Uint8Array(2); new DataView(a.buffer).setUint16(0, v & 0xffff); return this.raw(a); }
-  i16(v){ const a=new Uint8Array(2); new DataView(a.buffer).setInt16(0, v); return this.raw(a); }
-  u32(v){ const a=new Uint8Array(4); new DataView(a.buffer).setUint32(0, v>>>0); return this.raw(a); }
-  i32(v){ const a=new Uint8Array(4); new DataView(a.buffer).setInt32(0, v|0); return this.raw(a); }
-  ascii(s){ const a=new Uint8Array(s.length); for(let i=0;i<s.length;i++) a[i]=s.charCodeAt(i)&255; return this.raw(a); }
-  /* whole arrays at once — a Blob built from a million 2-byte parts never finishes */
-  u16arr(arr){
-    const a = new Uint8Array(arr.length*2), dv = new DataView(a.buffer);
-    for(let i=0;i<arr.length;i++) dv.setUint16(i*2, arr[i]);
-    return this.raw(a);
-  }
-  pad(n){ if(n>0) this.raw(new Uint8Array(n)); return this; }
-  /* Pascal string padded so the whole field is a multiple of `mult` */
-  pascal(s, mult){
-    s = s.slice(0,255);
-    const total = 1 + s.length;
-    const padLen = (mult - (total % mult)) % mult;
-    this.u8(s.length).ascii(s).pad(padLen);
-    return this;
-  }
-}
-
-/* PackBits, per PSD's RLE scheme */
-function packBits(src){
-  const n = src.length;
-  const out = new Uint8Array(n + Math.ceil(n/128) + 8);
-  let o = 0, i = 0;
-  while(i < n){
-    let run = 1;
-    while(i+run < n && src[i+run] === src[i] && run < 128) run++;
-    if(run >= 3){
-      out[o++] = 257 - run;
-      out[o++] = src[i];
-      i += run;
-    }else{
-      const start = i;
-      let lit = 0;
-      while(i < n && lit < 128){
-        if(i+2 < n && src[i] === src[i+1] && src[i] === src[i+2]) break;
-        i++; lit++;
-      }
-      out[o++] = lit - 1;
-      for(let k=0;k<lit;k++) out[o++] = src[start+k];
-    }
-  }
-  return out.subarray(0, o);
-}
-
-/* RLE-compress one RGBA block into planar channels.
-   `order` maps output plane -> RGBA byte offset.
-   Returns one concatenated buffer + one row-length table per channel. */
-function compressPlanes(rgba, w, h, order){
-  const data = [], counts = [];
-  const line = new Uint8Array(w);
-  for(let ci=0; ci<order.length; ci++){
-    const off = order[ci];
-    const rows = [];
-    const cnt = new Uint16Array(h);
-    let total = 0;
-    for(let y=0; y<h; y++){
-      let p = y*w*4 + off;
-      for(let x=0; x<w; x++, p+=4) line[x] = rgba[p];
-      const packed = packBits(line);
-      rows.push(packed);
-      cnt[y] = packed.length;
-      total += packed.length;
-    }
-    const merged = new Uint8Array(total);
-    let o = 0;
-    for(const r of rows){ merged.set(r, o); o += r.length; }
-    data.push(merged); counts.push(cnt);
-  }
-  return { data, counts };
-}
-
-function channelBlock(data, counts){
-  /* u16 compression + row length table + data, as one layer channel */
-  return new Bytes().u16(1).u16arr(counts).raw(data);
-}
-
-/* Hand the main thread back so the progress bar can paint.
-   setTimeout would do it, but Chrome clamps it to once per second in a
-   background tab — an operator who alt-tabs mid-export would watch a
-   three-second job take three minutes. MessageChannel is not throttled. */
-const yieldToUI = (() => {
-  const ch = new MessageChannel();
-  const queue = [];
-  ch.port1.onmessage = () => { const done = queue.shift(); if(done) done(); };
-  return () => new Promise(res => { queue.push(res); ch.port2.postMessage(0); });
-})();
-
-/* Render one piece to a canvas at its final placed size + rotation */
-function rasterPiece(p){
-  const c = document.createElement('canvas');
-  c.width = p.w; c.height = p.h;
-  const ctx = c.getContext('2d', { willReadFrequently:true });
-  ctx.imageSmoothingQuality = 'high';
-  drawPiece(ctx, p, 0, 0, p.w, p.h);
-  return ctx.getImageData(0,0,p.w,p.h).data;
-}
-
-async function buildPSD(sheet, dpi, onProgress){
-  const W = sheet.width, H = sheet.height;
-  if(W > PSD_MAX_PX || H > PSD_MAX_PX) throw new Error(`Sheet is ${W}×${H} px — over Photoshop's ${PSD_MAX_PX} px limit.`);
-
-  const total = sheet.pieces.length + Math.ceil(H/256) + 2;
-  let done = 0;
-  const tick = async label => { onProgress(++done/total, label); await yieldToUI(); };
-
-  /* ---- layers: alpha first, then R,G,B (PSD channel ids -1,0,1,2) ---- */
-  const layerRecords = new Bytes();
-  const layerPixels = new Bytes();
-  const cache = new Map();
-
-  for(let i=0; i<sheet.pieces.length; i++){
-    const p = sheet.pieces[i];
-    await tick(`layer ${i+1} of ${sheet.pieces.length}`);
-
-    /* identical copies of the same design compress once */
-    const key = `${p.id}|${p.w}|${p.h}|${p.rot?1:0}`;
-    let comp = cache.get(key);
-    if(!comp){
-      const rgba = rasterPiece(p);
-      comp = compressPlanes(rgba, p.w, p.h, [3,0,1,2]);   // A,R,G,B
-      cache.set(key, comp);
-    }
-
-    const blocks = comp.data.map((d,ci) => channelBlock(d, comp.counts[ci]));
-    const ids = [-1, 0, 1, 2];
-
-    const lx = pieceX(p, W);
-    layerRecords.i32(p.y).i32(lx).i32(p.y + p.h).i32(lx + p.w);
-    layerRecords.u16(4);
-    for(let ci=0; ci<4; ci++){ layerRecords.i16(ids[ci]); layerRecords.u32(blocks[ci].len); }
-    layerRecords.ascii('8BIM').ascii('norm');
-    layerRecords.u8(255).u8(0).u8(0).u8(0);              // opacity, clipping, flags, filler
-
-    const name = layerName(p);
-    const extra = new Bytes();
-    extra.u32(0);                                        // no layer mask
-    extra.u32(0);                                        // no blending ranges
-    extra.pascal(name, 4);
-    layerRecords.u32(extra.len);
-    for(const part of extra.parts) layerRecords.raw(part);
-
-    for(const b of blocks) for(const part of b.parts) layerPixels.raw(part);
-  }
-
-  const layerInfo = new Bytes();
-  /* negative count tells Photoshop the merged image's 4th channel is real
-     transparency, not a spot channel — DTF needs that alpha to survive */
-  layerInfo.i16(-sheet.pieces.length);
-  for(const part of layerRecords.parts) layerInfo.raw(part);
-  for(const part of layerPixels.parts) layerInfo.raw(part);
-  const layerInfoPad = layerInfo.len % 2;
-
-  /* ---- flattened composite, band by band so memory stays flat ---- */
-  await tick('flattening');
-  const BAND = 256;
-  const band = document.createElement('canvas');
-  band.width = W; band.height = Math.min(BAND, H);
-  const bctx = band.getContext('2d', { willReadFrequently:true });
-
-  const mergedData = [[],[],[],[]];      // R,G,B,A — one entry per band
-  const mergedCounts = [[],[],[],[]];
-
-  for(let y0=0; y0<H; y0+=BAND){
-    const bh = Math.min(BAND, H - y0);
-    band.height = bh;
-    bctx.clearRect(0,0,W,bh);
-    for(const p of sheet.pieces){
-      if(p.y + p.h <= y0 || p.y >= y0 + bh) continue;
-      drawPiece(bctx, p, pieceX(p, W), p.y - y0, p.w, p.h);
-    }
-    const rgba = bctx.getImageData(0,0,W,bh).data;
-    const chunk = compressPlanes(rgba, W, bh, [0,1,2,3]);   // R,G,B,A
-    for(let ci=0; ci<4; ci++){
-      mergedData[ci].push(chunk.data[ci]);
-      mergedCounts[ci].push(chunk.counts[ci]);
-    }
-    await tick(`flattening ${Math.min(100, Math.round((y0+bh)/H*100))}%`);
-  }
-
-  /* ---- assemble ---- */
-  await tick('writing file');
-  const f = new Bytes();
-  f.ascii('8BPS').u16(1).pad(6);
-  f.u16(4).u32(H).u32(W).u16(8).u16(3);        // 4 channels, RGB, 8-bit
-
-  f.u32(0);                                     // colour mode data: none for RGB
-
-  const res = new Bytes();
-  res.ascii('8BIM').u16(1005).u16(0).u32(16);   // resolution info
-  res.u32(Math.round(dpi * 65536)).i16(1).i16(1);
-  res.u32(Math.round(dpi * 65536)).i16(1).i16(1);
-  f.u32(res.len);
-  for(const part of res.parts) f.raw(part);
-
-  const lmLen = 4 + layerInfo.len + layerInfoPad + 4;
-  f.u32(lmLen);
-  f.u32(layerInfo.len + layerInfoPad);
-  for(const part of layerInfo.parts) f.raw(part);
-  f.pad(layerInfoPad);
-  f.u32(0);                                     // global layer mask info
-
-  f.u16(1);                                     // merged image, RLE
-  for(let ci=0; ci<4; ci++) for(const c of mergedCounts[ci]) f.u16arr(c);
-  for(let ci=0; ci<4; ci++) for(const d of mergedData[ci]) f.raw(d);
-
-  return new Blob(f.parts, { type:'image/vnd.adobe.photoshop' });
-}
-
-/* Layer names show up in Photoshop's panel — make them findable */
-function layerName(p){
-  const base = p.name.replace(/[^\x20-\x7e]/g,'').trim() || 'artwork';
-  const n = `${base}${p.copy > 1 ? ` #${p.copy}` : ''}`;
-  return n.length > 60 ? n.slice(0,57) + '...' : n;
-}
-
-/* ============================================================
-   6. Export
-   ============================================================ */
-
-/* An impatient double-click would otherwise run two exports at once and save
-   the same sheet twice, while both compete for the main thread. */
-let exporting = false;
-
-el.exportPsd.addEventListener('click', async () => {
-  if(!state.sheets.length || exporting) return;
-  exporting = true;
-  const dpi = cfg().dpi;
-  const multi = state.sheets.length > 1;
-  el.overlay.classList.remove('hide');
-
-  try{
-    for(let i=0; i<state.sheets.length; i++){
-      const sheet = state.sheets[i];
-      el.ovTitle.textContent = multi ? `Writing PSD ${i+1} of ${state.sheets.length}` : 'Writing PSD';
-      const blob = await buildPSD(sheet, dpi, (frac, label) => {
-        el.ovBar.style.width = Math.round(frac*100) + '%';
-        el.ovStep.textContent = label;
-      });
-      const lenU = Math.round(fromMM(pxToMM(sheet.height)) * 10) / 10;
-      const rollU = Math.round(fromMM(pxToMM(sheet.width)) * 10) / 10;
-      download(blob, `gangsheet_${rollU}x${lenU}${unit()}_${dpi}dpi${multi?`_${i+1}`:''}.psd`);
-      el.ovBar.style.width = '0%';
-    }
-    toast(multi ? `${state.sheets.length} PSDs saved` : 'PSD saved');
-  }catch(err){
-    toast(err.message || 'Could not write the PSD', true);
-  }finally{
-    exporting = false;
-    el.overlay.classList.add('hide');
-    el.ovBar.style.width = '0%';
-  }
-});
-
-/* ---------- remembered settings ----------
-   The shop's roll, DPI, gap and margin do not change between jobs. Retyping
-   them every morning is exactly the kind of thing this tool exists to stop. */
-const STORE_KEY = 'dtf-gang-sheet-settings-v1';
-
-function saveSettings(){
-  try{
-    localStorage.setItem(STORE_KEY, JSON.stringify({
-      units:el.units.value, dpi:el.dpi.value, roll:el.roll.value, len:el.len.value,
-      gap:el.gap.value, edge:el.edge.value, mirror:el.mirror.checked, spread:el.spread.checked,
-      rotate:el.bulkRotate.checked, rzDpi:el.rzDpi.value, rzPad:el.rzPad.checked, rzLoose:el.rzLoose.checked,
-    }));
-  }catch(e){ /* private mode — the tool still works, it just forgets */ }
-}
-
-function loadSettings(){
-  let s = null;
-  try{ s = JSON.parse(localStorage.getItem(STORE_KEY) || 'null'); }catch(e){}
-  if(!s) return;
-  if(s.units === 'mm' || s.units === 'in') el.units.value = s.units;
-  for(const [k, inp] of [['dpi',el.dpi],['roll',el.roll],['len',el.len],['gap',el.gap],['edge',el.edge],['rzDpi',el.rzDpi]]){
-    if(s[k] != null && s[k] !== '') inp.value = s[k];
-  }
-  if(s.mirror != null) el.mirror.checked = !!s.mirror;
-  if(s.spread != null) el.spread.checked = !!s.spread;
-  if(s.rotate != null) el.bulkRotate.checked = !!s.rotate;
-  if(s.rzPad  != null) el.rzPad.checked  = !!s.rzPad;
-  if(s.rzLoose!= null) el.rzLoose.checked= !!s.rzLoose;
-}
-
-function applyUnitSteps(){
-  const toIn = unit() === 'in';
-  el.roll.step  = toIn ? '0.5'   : '1';
-  el.len.step   = '1';
-  el.gap.step   = toIn ? '0.025' : '0.5';
-  el.edge.step  = toIn ? '0.05'  : '0.5';
-  el.bulkW.step = toIn ? '0.25'  : '5';
-}
-
-/* ---------- job sheet ----------
-   What was on this run: designs, sizes, quantities, prices, and the
-   resolution of each piece, as a spreadsheet the shop can keep. */
-function csvCell(v){
-  const s = String(v ?? '');
-  return /[",\n]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s;
-}
-function csvRows(rows){ return rows.map(r => r.map(csvCell).join(',')).join('\r\n'); }
-
-function jobCsv(){
-  const c = cfg();
-  const sheetOf = new Map();                  // design id -> sheet numbers used
-  state.sheets.forEach((s,i) => {
-    for(const p of s.pieces){
-      if(!sheetOf.has(p.id)) sheetOf.set(p.id, new Set());
-      sheetOf.get(p.id).add(i+1);
-    }
-  });
-
-  const filmMM = state.sheets.reduce((a,s) => a + pxToMM(s.height), 0);
-  const totalFill = state.sheets.length
-    ? state.sheets.reduce((a,s) => a + s.fill*s.width*s.height, 0) /
-      state.sheets.reduce((a,s) => a + s.width*s.height, 0) : 0;
-
-  const rows = [];
-  rows.push(['Sangeetha Arts & Sculptures — gang sheet job']);
-  rows.push(['Generated', new Date().toLocaleString()]);
-  rows.push([]);
-  rows.push(['Roll width', `${roundU(fromMM(c.rollMM))} ${unit()}`,
-             'Resolution', `${c.dpi} DPI`,
-             'Gap', `${roundU(fromMM(c.gapMM))} ${unit()}`,
-             'Edge margin', `${roundU(fromMM(c.edgeMM))} ${unit()}`,
-             'Mirrored', mirrored() ? 'yes' : 'no']);
-  rows.push(['Sheets', state.sheets.length,
-             'Film used', unit()==='in' ? `${fmt(filmMM/25.4,1)} in` : `${fmt(filmMM/1000,2)} m`,
-             'Fill', `${Math.round(totalFill*100)}%`,
-             'Pieces', state.sheets.reduce((n,s)=>n+s.pieces.length,0)]);
-  rows.push([]);
-  rows.push(['Design','Size','Qty','Unit price (INR)','Line total (INR)','Artwork px','Printed size (in)','Effective DPI','On sheet','Notes']);
-
-  let total = 0;
-  for(const it of state.items){
-    const s = pieceSizeIn(it);
-    const p = priceOf(it);
-    const line = p * Math.max(1, it.qty|0);
-    total += line;
-    const eff = effectiveDpi(it.srcW, s.w);
-    const notes = [];
-    if(it._over) notes.push('TOO LARGE FOR ROLL');
-    if(it.opaque) notes.push('no transparency');
-    const g = dpiGrade(eff);
-    if(g.tone==='warn'||g.tone==='bad') notes.push(`low resolution (${g.word})`);
-    if(!it.rotate) notes.push('rotation locked');
-    rows.push([
-      it.name,
-      PRESET_MAP[it.preset]?.label ?? `custom ${roundU(it.widthU)} ${unit()}`,
-      it.qty, p || '', line || '',
-      `${it.srcW}×${it.srcH}`,
-      `${s.w.toFixed(2)} × ${s.h.toFixed(2)}`,
-      Math.round(eff),
-      [...(sheetOf.get(it.id) ?? [])].join(' ') || '—',
-      notes.join('; '),
-    ]);
-  }
-  rows.push([]);
-  rows.push(['','','','Order total', total]);
-  return csvRows(rows);
-}
-
-function download(blob, name){
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = name;
-  document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(() => URL.revokeObjectURL(a.href), 30000);
-}
-
-/* ============================================================
-   7. Resizer — batch every PNG to one ordered size, zipped
-   ============================================================ */
-
-const CRC_TABLE = (() => {
-  const t = new Uint32Array(256);
-  for(let n=0; n<256; n++){
-    let c = n;
-    for(let k=0; k<8; k++) c = (c & 1) ? 0xEDB88320 ^ (c >>> 1) : c >>> 1;
-    t[n] = c >>> 0;
-  }
-  return t;
-})();
-function crc32(buf, seed = 0){
-  let c = (seed ^ 0xFFFFFFFF) >>> 0;
-  for(let i=0; i<buf.length; i++) c = CRC_TABLE[(c ^ buf[i]) & 0xFF] ^ (c >>> 8);
-  return (c ^ 0xFFFFFFFF) >>> 0;
-}
-
-/* Canvas writes no physical-size tag, so a resized PNG would open at 72 DPI
-   and the wrong inch size. Splice a pHYs chunk in after IHDR so Photoshop
-   reports exactly the size that was ordered. */
-function tagPngDpi(bytes, dpi){
-  const ppm = Math.round(dpi / 0.0254);
-  const chunk = new Uint8Array(21);
-  const dv = new DataView(chunk.buffer);
-  dv.setUint32(0, 9);
-  chunk.set([0x70,0x48,0x59,0x73], 4);            // "pHYs"
-  dv.setUint32(8, ppm); dv.setUint32(12, ppm);
-  chunk[16] = 1;                                   // unit = metre
-  dv.setUint32(17, crc32(chunk.subarray(4, 17)));
-
-  const ihdrEnd = 8 + 4 + 4 + 13 + 4;              // signature + full IHDR chunk
-  const out = new Uint8Array(bytes.length + chunk.length);
-  out.set(bytes.subarray(0, ihdrEnd), 0);
-  out.set(chunk, ihdrEnd);
-  out.set(bytes.subarray(ihdrEnd), ihdrEnd + chunk.length);
-  return out;
-}
-
-/* Minimal ZIP, stored (uncompressed) — PNG is already deflated, so
-   compressing again would cost seconds and save nothing. */
-function makeZip(files){
-  const enc = new TextEncoder();
-  const now = new Date();
-  const time = ((now.getHours()<<11) | (now.getMinutes()<<5) | (now.getSeconds()/2)) & 0xffff;
-  const date = (((now.getFullYear()-1980)<<9) | ((now.getMonth()+1)<<5) | now.getDate()) & 0xffff;
-
-  const locals = [], centrals = [];
-  let offset = 0;
-  for(const f of files){
-    const name = enc.encode(f.name);
-    const crc = crc32(f.data);
-    /* bit 11 says "this name is UTF-8". Without it an extractor must read the
-       name as CP437, which turns Kannada, Hindi or emoji filenames into
-       mojibake on the way out. */
-    const UTF8_FLAG = 0x0800;
-    const lh = new Uint8Array(30 + name.length);
-    const ld = new DataView(lh.buffer);
-    ld.setUint32(0, 0x04034b50, true); ld.setUint16(4, 20, true); ld.setUint16(6, UTF8_FLAG, true);
-    ld.setUint16(8, 0, true); ld.setUint16(10, time, true); ld.setUint16(12, date, true);
-    ld.setUint32(14, crc, true); ld.setUint32(18, f.data.length, true); ld.setUint32(22, f.data.length, true);
-    ld.setUint16(26, name.length, true); ld.setUint16(28, 0, true);
-    lh.set(name, 30);
-    locals.push(lh, f.data);
-
-    const ch = new Uint8Array(46 + name.length);
-    const cd = new DataView(ch.buffer);
-    cd.setUint32(0, 0x02014b50, true); cd.setUint16(4, 20, true); cd.setUint16(6, 20, true);
-    cd.setUint16(8, UTF8_FLAG, true); cd.setUint16(10, 0, true); cd.setUint16(12, time, true); cd.setUint16(14, date, true);
-    cd.setUint32(16, crc, true); cd.setUint32(20, f.data.length, true); cd.setUint32(24, f.data.length, true);
-    cd.setUint16(28, name.length, true);
-    cd.setUint32(42, offset, true);
-    ch.set(name, 46);
-    centrals.push(ch);
-
-    offset += lh.length + f.data.length;
-  }
-
-  const cdSize = centrals.reduce((a,c) => a + c.length, 0);
-  const eocd = new Uint8Array(22);
-  const ed = new DataView(eocd.buffer);
-  ed.setUint32(0, 0x06054b50, true);
-  ed.setUint16(8, files.length, true); ed.setUint16(10, files.length, true);
-  ed.setUint32(12, cdSize, true); ed.setUint32(16, offset, true);
-
-  return new Blob([...locals, ...centrals, eocd], { type:'application/zip' });
-}
-
-const rz = { items: [], preset: DEFAULT_PRESET };
-
-function rzBox(){
-  if(rz.preset === 'custom'){
-    return { w: Math.max(.1, +el.rzCw.value || 4), h: Math.max(.1, +el.rzCh.value || 4), label: 'custom' };
-  }
-  const p = PRESET_MAP[rz.preset];
-  return { w: p.w, h: p.h, label: p.key };
-}
-
-/* Same fit rule as the gang sheet, so both tools always agree on a size. */
-function rzTarget(it){
-  const box = rzBox();
-  const dpi = clamp(+el.rzDpi.value || 300, 72, 1200);
-  const ar = it.w / it.h;
-  const f = fitInBox(ar, box);
-  const pxW = Math.max(1, Math.round(f.w * dpi));
-  const pxH = Math.max(1, Math.round(f.h * dpi));
-  if(!el.rzPad.checked) return { pxW, pxH, artW:pxW, artH:pxH, dpi };
-  /* padding uses the box in the same orientation the artwork chose */
-  const padW = Math.max(pxW, Math.round((ar > 1 ? Math.max(box.w,box.h) : Math.min(box.w,box.h)) * dpi));
-  const padH = Math.max(pxH, Math.round((ar > 1 ? Math.min(box.w,box.h) : Math.max(box.w,box.h)) * dpi));
-  return { pxW:padW, pxH:padH, artW:pxW, artH:pxH, dpi };
-}
-
-function renderSizes(){
-  el.rzSizes.innerHTML = '';
-  const opts = [...PRESETS.map(p => ({ key:p.key, sz:p.label, pr:money(p.price) })),
-                { key:'custom', sz:'Custom', pr:'any size' }];
-  for(const o of opts){
-    const b = document.createElement('button');
-    b.className = 'size'; b.setAttribute('role','radio');
-    b.setAttribute('aria-checked', String(rz.preset === o.key));
-    b.innerHTML = `<span class="sz"></span><span class="pr"></span>`;
-    b.querySelector('.sz').textContent = o.sz;
-    b.querySelector('.pr').textContent = o.pr;
-    b.addEventListener('click', () => {
-      rz.preset = o.key;
-      el.rzCustom.hidden = o.key !== 'custom';
-      renderSizes(); renderRzList();
-    });
-    el.rzSizes.appendChild(b);
-  }
-}
-
-function renderRzList(){
-  el.rzList.innerHTML = '';
-  let lowRes = 0;
-  for(const it of rz.items){
-    const li = document.createElement('li');
-    li.className = 'rz-item';
-    const th = document.createElement('div');
-    th.className = 'rz-thumb';
-    const img = document.createElement('img'); img.alt=''; img.src = it.thumb;
-    th.appendChild(img);
-    const meta = document.createElement('div');
-    meta.className = 'rz-meta';
-    const nm = document.createElement('div');
-    nm.className = 'rz-name'; nm.textContent = it.name; nm.title = it.name;
-    const dm = document.createElement('div');
-    dm.className = 'rz-dim';
-    const t = rzTarget(it);
-    dm.textContent = `${it.w}×${it.h} → ${t.artW}×${t.artH}`;
-
-    /* upscaling is the quiet killer here — a small file blown up to 6 inches
-       prints blocky, and nobody notices until the film is already pressed */
-    const box = rzBox();
-    const f = fitInBox(it.w/it.h, box);
-    const eff = effectiveDpi(it.w, f.w);
-    const g = dpiGrade(eff);
-    if(g.tone === 'warn' || g.tone === 'bad'){
-      lowRes++;
-      const flag = document.createElement('span');
-      flag.className = 'flag ' + g.tone;
-      flag.textContent = `${Math.round(eff)} DPI`;
-      flag.title = `Only ${Math.round(eff)} real pixels per inch at this size — the print will look ${g.word}.`;
-      dm.append(' ', flag);
-    }
-    if(it.opaque){
-      const flag = document.createElement('span');
-      flag.className = 'flag warn';
-      flag.textContent = 'opaque';
-      flag.title = 'No transparent background — this will print as a solid rectangle.';
-      dm.append(' ', flag);
-    }
-
-    meta.append(nm, dm);
-
-    const x = document.createElement('button');
-    x.className = 'x'; x.textContent = '✕'; x.title = `Remove ${it.name}`;
-    x.style.marginLeft = 'auto';
-    x.addEventListener('click', () => {
-      rz.items = rz.items.filter(v => v !== it);
-      renderRzList();
-    });
-
-    li.append(th, meta, x);
-    el.rzList.appendChild(li);
-  }
-  rz.lowRes = lowRes;
-  const n = rz.items.length;
-  el.rzCount.textContent = n
-    ? `${n} file${n>1?'s':''} ready` + (lowRes ? ` · ${lowRes} below 150 DPI` : '')
-    : 'no files yet';
-  el.rzGo.disabled = !n;
-  el.rzClear.disabled = !n;
-  const box = rzBox();
-  const dpi = clamp(+el.rzDpi.value || 300, 72, 1200);
-  el.rzNote.textContent = `${box.w} × ${box.h} in at ${dpi} DPI = ${Math.round(box.w*dpi)} × ${Math.round(box.h*dpi)} px`;
-}
-
-async function rzAdd(fileList){
-  const files = [...fileList].filter(f => /^image\//.test(f.type));
-  if(!files.length) return;
-  let failed = 0;
-  for(const f of files){
-    try{
-      const bmp = await createImageBitmap(f);
-      const trimmed = trimAlpha(bmp);
-      bmp.close?.();
-      if(!trimmed){ failed++; continue; }
-      rz.items.push({
-        name: f.name.replace(/\.[^.]+$/,''),
-        src: trimmed.canvas,
-        w: trimmed.canvas.width,
-        h: trimmed.canvas.height,
-        opaque: !!trimmed.opaque,
-        thumb: thumbURL(trimmed.canvas, 76),
-      });
-    }catch(e){ failed++; }
-  }
-  if(failed) toast(`${failed} file${failed>1?'s':''} could not be read`, true);
-  renderRzList();
-}
-
-async function rzRun(){
-  if(!rz.items.length || exporting) return;
-  exporting = true;
-  el.overlay.classList.remove('hide');
-  el.ovTitle.textContent = 'Resizing';
-  try{
-    const out = [];
-    const used = new Set();
-    for(let i=0; i<rz.items.length; i++){
-      const it = rz.items[i];
-      el.ovBar.style.width = Math.round(i/rz.items.length*100) + '%';
-      el.ovStep.textContent = `${i+1} of ${rz.items.length} — ${it.name}`;
-      await yieldToUI();
-
-      const t = rzTarget(it);
-      const c = document.createElement('canvas');
-      c.width = t.pxW; c.height = t.pxH;
-      const ctx = c.getContext('2d');
-      ctx.imageSmoothingQuality = 'high';
-      ctx.drawImage(it.src, Math.round((t.pxW-t.artW)/2), Math.round((t.pxH-t.artH)/2), t.artW, t.artH);
-
-      const blob = await new Promise(r => c.toBlob(r, 'image/png'));
-      const tagged = tagPngDpi(new Uint8Array(await blob.arrayBuffer()), t.dpi);
-
-      let name = `${it.name}_${rzBox().label}.png`;
-      let n = 2;
-      while(used.has(name)){ name = `${it.name}_${rzBox().label}_${n++}.png`; }
-      used.add(name);
-      out.push({ name, data: tagged });
-    }
-    el.ovBar.style.width = '100%';
-    if(el.rzLoose.checked){
-      /* Windows shows no thumbnails for files inside a zip, so offer them
-         loose. Chrome asks once to allow several downloads from a page. */
-      el.ovStep.textContent = 'saving files…';
-      for(const f of out){
-        download(new Blob([f.data], { type:'image/png' }), f.name);
-        await new Promise(r => setTimeout(r, 120));
-      }
-      toast(`${out.length} file${out.length>1?'s':''} saved — allow multiple downloads if Chrome asks`);
-    }else{
-      el.ovStep.textContent = 'building zip…';
-      await yieldToUI();
-      download(makeZip(out), `resized_${rzBox().label}_${out.length}files.zip`);
-      toast(`${out.length} file${out.length>1?'s':''} resized and zipped`);
-    }
-  }catch(err){
-    toast(err.message || 'Could not resize', true);
-  }finally{
-    exporting = false;
-    el.overlay.classList.add('hide');
-    el.ovBar.style.width = '0%';
-  }
-}
-
-function setMode(m){
-  const nest = m === 'nest';
-  el.viewNest.hidden = !nest;
-  el.viewResize.hidden = nest;
-  el.modeNest.setAttribute('aria-selected', String(nest));
-  el.modeResize.setAttribute('aria-selected', String(!nest));
-  el.stats.hidden = !nest;
-  el.exportPsd.hidden = !nest;
-  el.exportCsv.hidden = !nest;
-  if(nest) renderPreview();
-}
-
-/* ============================================================
-   8. Wiring
-   ============================================================ */
-
-el.drop.addEventListener('click', () => el.file.click());
-el.drop.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){ e.preventDefault(); el.file.click(); } });
-el.file.addEventListener('change', e => { addFiles(e.target.files); e.target.value=''; });
-
-['dragenter','dragover'].forEach(ev => el.drop.addEventListener(ev, e => {
-  e.preventDefault(); el.drop.classList.add('over');
-}));
-['dragleave','drop'].forEach(ev => el.drop.addEventListener(ev, e => {
-  e.preventDefault(); el.drop.classList.remove('over');
-}));
-document.addEventListener('dragover', e => e.preventDefault());
-
-/* Exactly one place adds dropped files. The drop zones only light up — if
-   they added files too, a drop on a zone would bubble to here and every
-   file would land twice. */
-document.addEventListener('drop', e => {
-  e.preventDefault();
-  if(!e.dataTransfer?.files?.length) return;
-  if(el.viewResize.hidden) addFiles(e.dataTransfer.files);
-  else rzAdd(e.dataTransfer.files);
-});
-
-[el.dpi, el.roll, el.len, el.gap, el.edge].forEach(inp =>
-  inp.addEventListener('input', () => { repack(); saveSettings(); }));
-
-el.mirror.addEventListener('change', () => { renderPreview(); saveSettings(); });
-el.spread.addEventListener('change', () => { repack(); saveSettings(); });
-
-el.exportCsv.addEventListener('click', () => {
-  if(!state.items.length) return;
-  const blob = new Blob(['﻿' + jobCsv()], { type:'text/csv;charset=utf-8' });
-  const stamp = new Date().toISOString().slice(0,16).replace(/[:T]/g,'-');
-  download(blob, `job_${stamp}.csv`);
-  toast('Job sheet saved');
-});
-
-/* Converting is only correct when the unit actually changed. Reacting to a
-   change event that reports the same unit would silently divide every
-   measurement by 25.4 again. */
-let lastUnit = unit();
-el.units.addEventListener('change', () => {
-  if(unit() === lastUnit) return;
-  lastUnit = unit();
-  const toIn = unit() === 'in';
-  /* convert every entered value so the physical job stays identical */
-  for(const inp of [el.roll, el.len, el.gap, el.edge]){
-    const v = +inp.value || 0;
-    inp.value = roundU(toIn ? v/25.4 : v*25.4);
-  }
-  applyUnitSteps();
-  for(const it of state.items) it.widthU = roundU(toIn ? it.widthU/25.4 : it.widthU*25.4);
-  if(el.bulkW.value) el.bulkW.value = roundU(toIn ? +el.bulkW.value/25.4 : +el.bulkW.value*25.4);
-  document.querySelectorAll('[data-unit]').forEach(s => s.textContent = unit());
-  renderItems(); repack(); renderRzList(); saveSettings();
-});
-
-el.bulkPreset.addEventListener('change', () => {
-  el.bulkWWrap.hidden = el.bulkPreset.value !== 'custom';
-});
-
-el.bulkApply.addEventListener('click', () => {
-  const key = el.bulkPreset.value;
-  if(!key){ toast('Pick a size first', true); return; }
-  if(!state.items.length){ toast('Add some artwork first', true); return; }
-  if(key === 'custom'){
-    const v = +el.bulkW.value;
-    if(!v || v <= 0){ toast('Enter a width first', true); return; }
-    for(const it of state.items){ it.preset = 'custom'; it.widthU = roundU(v); }
-  }else{
-    for(const it of state.items) it.preset = key;
-  }
-  renderItems(); repack();
-  toast(`All ${state.items.length} design${state.items.length>1?'s':''} set`);
-});
-el.bulkRotate.addEventListener('change', () => {
-  for(const it of state.items) it.rotate = el.bulkRotate.checked;
-  renderItems(); repack(); saveSettings();
-});
-
-el.zoomIn .addEventListener('click', () => { state.zoom = (state.zoom ?? fitScale()) * 1.35; renderPreview(); });
-el.zoomOut.addEventListener('click', () => { state.zoom = (state.zoom ?? fitScale()) / 1.35; renderPreview(); });
-el.zoomFit.addEventListener('click', () => { state.zoom = null; renderPreview(); });
-
-function fitScale(){
-  const s = state.sheets[state.active];
-  if(!s) return 1;
-  return Math.min((el.wrap.clientWidth-74)/s.width, (el.wrap.clientHeight-96)/s.height);
-}
-
-let resizeTimer;
-window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(renderPreview, 120); });
-
-/* ---- resizer wiring ---- */
-el.modeNest.addEventListener('click', () => setMode('nest'));
-el.modeResize.addEventListener('click', () => setMode('resize'));
-
-el.rzDrop.addEventListener('click', () => el.rzFile.click());
-el.rzDrop.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){ e.preventDefault(); el.rzFile.click(); } });
-el.rzFile.addEventListener('change', e => { rzAdd(e.target.files); e.target.value=''; });
-['dragenter','dragover'].forEach(ev => el.rzDrop.addEventListener(ev, e => { e.preventDefault(); el.rzDrop.classList.add('over'); }));
-['dragleave','drop'].forEach(ev => el.rzDrop.addEventListener(ev, e => { e.preventDefault(); el.rzDrop.classList.remove('over'); }));
-/* no add here — the document-level drop handler above owns that */
-
-[el.rzCw, el.rzCh, el.rzDpi].forEach(i => i.addEventListener('input', () => { renderRzList(); saveSettings(); }));
-el.rzPad.addEventListener('change', () => { renderRzList(); saveSettings(); });
-el.rzLoose.addEventListener('change', saveSettings);
-el.rzClear.addEventListener('click', () => { rz.items = []; renderRzList(); });
-el.rzGo.addEventListener('click', rzRun);
-
-/* ---- boot ---- */
-loadSettings();
-lastUnit = unit();          // saved values are already in the saved unit
-applyUnitSteps();
-renderSizes(); renderRzList();
-document.querySelectorAll('[data-unit]').forEach(s => s.textContent = unit());
-updateLimits(Math.round(mmToPx(cfg().rollMM)), Math.min(Math.round(mmToPx(cfg().lenMM)), PSD_MAX_PX));
-</script>
-
-<script>
-/* ------------------------------------------------------------------
-   Optional AdSense strip.
-
-   Kept in its own script so it can never take the tool down with it. If
-   ADSENSE_SLOT is blank, the ad is blocked, or Google has no ad to serve,
-   nothing renders, the strip collapses, and the nester behaves exactly as
-   it does offline. Artwork is never sent anywhere either way.
-
-   To switch it on: create a Display ad unit in AdSense, then paste its
-   data-ad-slot number below.
-   ------------------------------------------------------------------ */
+/* Optional AdSense. With no slot id nothing loads and no request is made. */
 (function(){
-  var ADSENSE_CLIENT = 'ca-pub-5619507936329297';
-  var ADSENSE_SLOT   = '';          // <-- paste the ad unit's slot id here
+  var CLIENT = 'ca-pub-5619507936329297';
+  var SLOTS  = { 'ad-top': '', 'ad-mid': '' };   // <-- paste display unit slot ids
 
-  if(!ADSENSE_SLOT) return;
+  var wanted = Object.keys(SLOTS).filter(function(id){ return SLOTS[id]; });
+  if(!wanted.length) return;
 
-  var bar = document.getElementById('adbar');
-  if(!bar) return;
-  var hide = function(){ bar.hidden = true; };
+  var s = document.createElement('script');
+  s.async = true; s.crossOrigin = 'anonymous';
+  s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' + CLIENT;
+  document.head.appendChild(s);
 
-  try{
+  wanted.forEach(function(id){
+    var box = document.getElementById(id);
+    if(!box) return;
     var ins = document.createElement('ins');
     ins.className = 'adsbygoogle';
     ins.style.display = 'block';
-    ins.setAttribute('data-ad-client', ADSENSE_CLIENT);
-    ins.setAttribute('data-ad-slot', ADSENSE_SLOT);
-    ins.setAttribute('data-ad-format', 'horizontal');
+    ins.setAttribute('data-ad-client', CLIENT);
+    ins.setAttribute('data-ad-slot', SLOTS[id]);
+    ins.setAttribute('data-ad-format', 'auto');
     ins.setAttribute('data-full-width-responsive', 'true');
-    bar.appendChild(ins);
-    bar.hidden = false;
-
-    var s = document.createElement('script');
-    s.async = true;
-    s.crossOrigin = 'anonymous';
-    s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' + ADSENSE_CLIENT;
-    s.onerror = hide;               // blocked by an ad blocker, or offline
-    document.head.appendChild(s);
-
-    (window.adsbygoogle = window.adsbygoogle || []).push({});
-
-    /* Google marks the slot "unfilled" when it has nothing to serve */
+    box.appendChild(ins);
+    try{ (window.adsbygoogle = window.adsbygoogle || []).push({}); }catch(e){}
     setTimeout(function(){
-      if(ins.getAttribute('data-ad-status') === 'unfilled') hide();
+      if(ins.getAttribute('data-ad-status') === 'unfilled') box.style.display = 'none';
     }, 4000);
-  }catch(e){ hide(); }
+  });
 })();
 </script>
+</body>
+</html>

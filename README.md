@@ -1,8 +1,11 @@
 # Gang Sheet Nester
 
-**▶ Use it: https://dhanud72.github.io/dtf-gang-sheet-nester/**
+**▶ Use it: https://dhanud72.github.io/dtf-gang-sheet-nester/tool.html**
+**📖 Artwork guide: https://dhanud72.github.io/dtf-gang-sheet-nester/**
 
-A single-file web tool for DTF transfer printing. Open the link, or download `index.html` and open it in Chrome. No install, no server, no sign-up.
+A single-file web tool for DTF transfer printing. Open the link, or download `tool.html` and open it in Chrome. No install, no server, no sign-up.
+
+The repo is two files: `tool.html` is the whole application, and `index.html` is a written guide to preparing DTF artwork that links to it.
 
 **Your artwork never leaves your machine.** The trimming, nesting, PSD writing and resizing all happen in your browser — there is no upload and no back end. The hosted page carries an ad strip that loads from Google; your files play no part in it, and blocking it changes nothing about how the tool works. Save `index.html` locally and it runs fully offline.
 
