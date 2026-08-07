@@ -1,8 +1,10 @@
 # Gang Sheet Nester
 
-A single-file web tool for DTF transfer printing. Open `gang-sheet-nester.html` in Chrome — no install, no server, no upload. Everything runs on the machine, and artwork never leaves it.
+**▶ Use it: https://dhanud72.github.io/dtf-gang-sheet-nester/**
 
-Built for **Sangeetha Arts & Sculptures**.
+A single-file web tool for DTF transfer printing. Open the link, or download `index.html` and open it in Chrome. No install, no server, no sign-up, and **nothing is ever uploaded** — the nesting, the PSD and the resizing all happen in your browser, on your machine. Works offline once the page has loaded.
+
+Free and MIT licensed. Built by **Sangeetha Arts & Sculptures**, a DTF transfer printer in Bengaluru.
 
 ## Two tools
 
@@ -52,6 +54,31 @@ A PSD cannot exceed **30,000 px**, which is 100 inches at 300 DPI. Longer jobs s
 
 Chrome (or Edge). Firefox and Safari are untested.
 
+## Using your own prices
+
+The size tiers and prices in the header are the ones this shop sells at, in rupees. To use your own, edit the `PRESETS` array near the top of the `<script>` block in `index.html`:
+
+```js
+const PRESETS = [
+  { key:'2x2', label:'2 × 2 in', w:2, h:2, price:20 },
+  ...
+];
+```
+
+`w` and `h` are inches, `price` is per piece. Set `price:0` to hide the money columns entirely.
+
 ## Status
 
-Output is verified structurally — the PSD is parsed back byte by byte, packing is proved free of overlaps across randomised jobs, and mirroring is proved pixel-exact. **It has not yet been opened in real Photoshop or a production RIP.** Check the first sheet of a real job before trusting it on paid work.
+Output is verified structurally — the PSD is parsed back byte by byte, packing is proved free of overlaps across randomised jobs at a range of roll widths and resolutions, and mirroring is proved pixel-exact over ~150,000 sampled pixels.
+
+**It has not yet been opened in real Photoshop or a production RIP.** Run one sheet and check it before trusting it on paid work. If something comes out wrong, please open an issue with the roll width, DPI and a description — that feedback is the fastest way to make this solid for everyone.
+
+## Contributing
+
+Issues and pull requests welcome. It is deliberately one dependency-free HTML file; please keep it that way — no build step, no npm, no CDN.
+
+The most useful thing anyone could add is **true-shape nesting**: artwork currently packs as bounding rectangles, so round and irregular stickers leave roughly 10–20% of the film unused. The packer already runs several strategies and keeps whichever uses least film, so a shape-aware placer can be added alongside the existing ones without risking the current results.
+
+## Licence
+
+MIT — see [LICENSE](LICENSE).
