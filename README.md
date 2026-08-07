@@ -5,7 +5,14 @@
 
 A single-file web tool for DTF transfer printing. Open the link, or download `tool.html` and open it in Chrome. No install, no server, no sign-up.
 
-The repo is two files: `tool.html` is the whole application, and `index.html` is a written guide to preparing DTF artwork that links to it.
+`tool.html` is the whole application — one self-contained file with no dependencies. Alongside it are four written guides on DTF printing:
+
+| Page | What it covers |
+|---|---|
+| [`index.html`](https://dhanud72.github.io/dtf-gang-sheet-nester/) | Preparing artwork: transparency, effective resolution, trimming, mirroring, size tiers, gaps |
+| [`sizes-and-placement.html`](https://dhanud72.github.io/dtf-gang-sheet-nester/sizes-and-placement.html) | How big a design should be and exactly where it goes, with measurements |
+| [`fabrics.html`](https://dhanud72.github.io/dtf-gang-sheet-nester/fabrics.html) | Fabric compatibility, heat ranges, and dye migration on dark polyester |
+| [`troubleshooting.html`](https://dhanud72.github.io/dtf-gang-sheet-nester/troubleshooting.html) | Diagnosing peeling, cracking and wash failures from the symptom backwards |
 
 **Your artwork never leaves your machine.** The trimming, nesting, PSD writing and resizing all happen in your browser — there is no upload and no back end. The hosted page carries an ad strip that loads from Google; your files play no part in it, and blocking it changes nothing about how the tool works. Save `index.html` locally and it runs fully offline.
 

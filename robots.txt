@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://dhanud72.github.io/dtf-gang-sheet-nester/sitemap.xml
